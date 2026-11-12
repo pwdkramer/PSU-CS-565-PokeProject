@@ -1,4 +1,4 @@
-import { Database } from 'node:sqlite';
+import { DatabaseSync } from 'node:sqlite';
 
 export const DECKSIZE = 60;
 
@@ -46,31 +46,31 @@ export default class DB {
     this.database = new Database('pokemon-tcg.db');
 
     this.database.exec(
-      'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT NOT NULL, password TEXT NOT NULL, wins INTEGER NOT NULL, losses INTEGER NOT NULL)'
+      'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT NOT NULL, password TEXT NOT NULL, wins INTEGER NOT NULL, losses INTEGER NOT NULL)',
     );
 
     // decks table, columsn: id (does not auto increment - pivot on users->id), decks1 ,2 ,3 which will be card ids JSON.stringify-ied
     this.database.exec(
-      'CREATE TABLE IF NOT EXISTS decks (id INT PRIMARY KEY NOT NULL, deck1 TEXT, deck2 TEXT, deck3 TEXT)'
+      'CREATE TABLE IF NOT EXISTS decks (id INT PRIMARY KEY NOT NULL, deck1 TEXT, deck2 TEXT, deck3 TEXT)',
     );
   }
 
   isValidPassword(password) {
     // needs more?
     return password.length > 0;
-  };
+  }
 
   isValidUsername(username) {
     // needs more?
     return username.length > 0;
-  };
+  }
 
   usernameExists(username) {
     const ret = this.database
       .prepare('SELECT COUNT * as count FROM users WHERE username=?')
       .get(username); // returns object {count: <int> }
     return Boolean(ret.count);
-  };
+  }
 
   validateLogin(username, password) {
     if (!username || !password) {
@@ -87,14 +87,14 @@ export default class DB {
       return false;
     }
 
-    const { id, username, password, wins, losses } = ret;
+    const { id, wins, losses } = ret;
 
     if (password !== password) {
       return false;
     }
 
     return new User(id, username, wins, losses);
-  };
+  }
 
   insertNewUser(username, password) {
     if (isValidUsername(username) && isValidPassword(password)) {
@@ -104,7 +104,7 @@ export default class DB {
 
       const res = this.database
         .prepare(
-          'INSERT INTO users (username, password, wins, losses) VALUES (?, ?, 0, 0)'
+          'INSERT INTO users (username, password, wins, losses) VALUES (?, ?, 0, 0)',
         )
         .run(username, password);
       return res.changes === 0
@@ -113,7 +113,7 @@ export default class DB {
     }
 
     return false;
-  };
+  }
 
   updateDeck(user, deckIndex, deck) {
     // user is User instance,
@@ -142,12 +142,12 @@ export default class DB {
         ON CONFLICT(id) DO UPDATE SET 
           deck1 = COALESCE(excluded.deck1, decks.deck1),
           deck2 = COALESCE(excluded.deck2, decks.deck2),
-          deck3 = COALESCE(excluded.deck3, decks.deck3)`
+          deck3 = COALESCE(excluded.deck3, decks.deck3)`,
       )
       .run(deckUpsert);
 
     return upsert.changes === 1;
-  };
+  }
 
   getDecks(user) {
     // user is a User instance
@@ -164,5 +164,5 @@ export default class DB {
     }
 
     return new Decks();
-  };
+  }
 }

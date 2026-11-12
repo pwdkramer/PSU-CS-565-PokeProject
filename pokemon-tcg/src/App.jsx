@@ -1,6 +1,8 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Main from './components/Main';
-import Deckpage from './components/Deckpage';
+import Homepage from './components/Homepage';
+import Cardview from './components/Cardview';
+import Deckbuild from './components/Deckbuild';
 import './App.css';
 
 // internal routes sent to server.js
@@ -8,6 +10,8 @@ const getEndpoint = (dataType) => {
   switch (dataType) {
     case 'cardimgs':
       return '/api/cardimgs';
+    case 'deckbuild':
+      return '/api/deck';
   }
 };
 
@@ -16,12 +20,9 @@ const getEndpoint = (dataType) => {
 const fetchCards = async function fetchCards(dataType) {
   try {
     const endpoint = getEndpoint(dataType);
-    console.log(`${endpoint}`);
     const response = await fetch(endpoint);
     const data = await response.json();
-    console.log(`payload: ${data.payload}`);
-    console.log(data.payload[0]);
-
+    
     if (!response.ok) {
       return {
         data: null,
@@ -50,30 +51,28 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        Component: Deckpage,
+        Component: Homepage,
+      },
+      {
+        path: 'cardview',
+        Component: Cardview,
         loader: () => fetchCards('cardimgs'),
         // this is supposed to render during loading events.
         // See https://reactrouter.com/start/framework/route-module#hydratefallback
         HydrateFallback: () => {
-          return <p role="status">Loading Home Route ...</p>;
-        },
-      },
-      /*{
-        path: 'deckbuild',
-        Component: Countries,
-        loader: () => fetchCountries('countries'),
-        HydrateFallback: () => {
-          return <p role="status">Loading Countries Route ...</p>;
+          return <p role="status">Loading Cardview Route ...</p>;
         },
       },
       {
-        path: 'battle',
-        Component: Populations,
-        loader: () => fetchCountries('populous'),
+        path: 'deckbuild',
+        Component: Deckbuild,
+        loader: () => fetchCards('deckbuild'),
+        // this is supposed to render during loading events.
+        // See https://reactrouter.com/start/framework/route-module#hydratefallback
         HydrateFallback: () => {
-          return <p role="status">Loading Populous Route ...</p>;
+          return <p role="status">Loading Cardview Route ...</p>;
         },
-      },*/
+      },
     ],
   },
 ]);
