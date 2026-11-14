@@ -14,14 +14,13 @@ export class Identification {
   }
 }
 
-export class EvolvesFrom {
+export class EvolveFrom {
   id = null;
   name = null;
   stage = 0;
 
-  constructor({ EvolvesFrom, stage }) {
-    console.log(stage);
-    this.name = EvolvesFrom;
+  constructor({ evolveFrom, stage }) {
+    this.name = evolveFrom ?? null;
     const lastCharNum = Number(stage?.[stage.length - 1]);
 
     if (stage === 'Basic') {
@@ -29,14 +28,30 @@ export class EvolvesFrom {
     } else if (Number.isInteger(lastCharNum)) {
       this.stage = lastCharNum;
     } else {
-      throw new Error(`Failed to parse EvolvesFrom stage. Received: ${stage}`);
+      throw new Error(`Failed to parse EvolveFrom stage. Received: ${stage}`);
+    }
+  }
+
+  mapId(cardsList) {
+    if (this.stage > 0) {
+      cardsList.some((card) => {
+        const {
+          identification: { id },
+          name,
+        } = card;
+        if (name === this.name) {
+          this.id = id;
+          return true; // early exit
+        }
+        return false;
+      });
     }
   }
 }
 
 export class RawPokemonCard {
   identification = null; // Identification instance
-  evolvesFrom = null;
+  evolveFrom = null;
 
   name = '';
   hp = 0;
@@ -47,9 +62,8 @@ export class RawPokemonCard {
   weaknesses = [];
 
   constructor(rawData) {
-    console.log(rawData.id);
     this.identification = new Identification(rawData);
-    this.evolvesFrom = new EvolvesFrom(rawData);
+    this.evolveFrom = new EvolveFrom(rawData);
 
     const { name, hp, types, abilities, attacks, weaknesses } = rawData;
     this.name = name;
@@ -62,14 +76,30 @@ export class RawPokemonCard {
 }
 
 export class RawTrainerCard {
-  constructor(rawData) {}
+  identification = null;
+
+  name = '';
+  effect = '';
+
+  constructor(rawData) {
+    this.identification = new Identification(rawData);
+    ({ name: this.name, effect: this.effect } = rawData);
+  }
 }
 
 export class RawEnergyCard {
-  constructor(rawData) {}
+  identification = null;
+
+  name = '';
+  energyType = ''; // Base or Special (only base1-96)
+
+  constructor(rawData) {
+    this.identification = new Identification(rawData);
+    ({ name: this.name, energyType: this.energyType } = rawData);
+  }
 }
 
-const buildRawCard = function buildRawCardFromHttpData(rawData) {
+export const buildRawCard = function buildRawCardFromHttpData(rawData) {
   const { category } = rawData;
   switch (category) {
     case 'Pokemon':
@@ -81,4 +111,10 @@ const buildRawCard = function buildRawCardFromHttpData(rawData) {
   }
 };
 
-export default buildRawCard;
+export const updateCardFields = function setEvolvesFromId(cardarray) {
+  cardarray.forEach((card) => {
+    if (card.identification.category === 'Pokemon') {
+      card.evolveFrom.mapId(cardarray);
+    }
+  });
+};

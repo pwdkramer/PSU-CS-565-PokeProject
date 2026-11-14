@@ -2,7 +2,13 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import database, { User, Decks } from './database/poke-tcg-db.js';
-import buildRawCard from './types/RawCard.js';
+import { buildRawCard, updateCardFields } from './types/rawCard.js';
+
+import { Console } from 'node:console';
+import { createWriteStream } from 'fs';
+
+const logFile = createWriteStream('./allcards.log', { flags: 'a' });
+const fileLogger = new Console({ stdout: logFile, stderr: logFile });
 
 // footer reference: <a target="_blank" href="https://icons8.com/icon/8gTxcIoC22Bp/pokemonball">Pokemonball</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
 // <a target="_blank" href="https://icons8.com/icon/45657/up-arrow">Up Arrow</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
@@ -66,6 +72,7 @@ const getCards = async function getCardsFromSetData() {
 
   const set = await getSet();
   const cardData = await Promise.all(set.map((card) => getCard(card.id)));
+  updateCardFields(cardData);
 
   CARDS = cardData;
 
@@ -89,12 +96,11 @@ app.get('/api/cardimgs', async (req, res) => {
 app.get('/api/deck', async (req, res) => {
   try {
     const cards = await getCards();
-    console.log(cards);
+
     return res.status(200).json({
       payload: cards,
     });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({
       payload: `Failed to get card data: ${error}`,
     });

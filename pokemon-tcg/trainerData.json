@@ -1,0 +1,286 @@
+RawTrainerCard {
+  identification: Identification {
+    category: 'Trainer',
+    id: 'base1-70',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/70',
+    localId: '70',
+    rarity: 'Rare'
+  },
+  name: 'Clefairy Doll',
+  effect: "Play Clefairy Doll as if it were a Basic Pokémon. While in play, Clefairy Doll counts as a Pokémon (instead of a Trainer card). Clefairy Doll has no attacks, can't retreat, and can't be Asleep, Confused, Paralyzed, or Poisoned. If Clefairy Doll is Knocked Out, it doesn't count as a Knocked Out Pokémon. At any time during your turn before your attack, you may discard Clefairy Doll."
+}
+RawTrainerCard {
+  identification: Identification {
+    category: 'Trainer',
+    id: 'base1-71',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/71',
+    localId: '71',
+    rarity: 'Rare'
+  },
+  name: 'Computer Search',
+  effect: 'Discard 2 of the other cards from your hand in order to search your deck for any card and put it into your hand. Shuffle your deck afterward.'
+}
+RawTrainerCard {
+  identification: Identification {
+    category: 'Trainer',
+    id: 'base1-72',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/72',
+    localId: '72',
+    rarity: 'Rare'
+  },
+  name: 'Devolution Spray',
+  effect: 'Choose 1 of your own Pokémon in play and a Stage of Evolution. Discard all Evolution cards of that Stage or higher attached to that Pokémon. That Pokémon is no longer Asleep, Confused, Paralyzed, Poisoned, or anything else that might be the result of an attack (just as if you had evolved it).'
+}
+RawTrainerCard {
+  identification: Identification {
+    category: 'Trainer',
+    id: 'base1-73',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/73',
+    localId: '73',
+    rarity: 'Rare'
+  },
+  name: 'Impostor Professor Oak',
+  effect: 'Your opponent shuffles his or her hand into his or her deck, then draws 7 cards.'
+}
+RawTrainerCard {
+  identification: Identification {
+    category: 'Trainer',
+    id: 'base1-74',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/74',
+    localId: '74',
+    rarity: 'Rare'
+  },
+  name: 'Item Finder',
+  effect: 'Discard 2 of the other cards from your hand in order to put a Trainer card from your discard pile into your hand.'
+}
+RawTrainerCard {
+  identification: Identification {
+    category: 'Trainer',
+    id: 'base1-75',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/75',
+    localId: '75',
+    rarity: 'Rare'
+  },
+  name: 'Lass',
+  effect: 'You and your opponent show each other your hands, then shuffle all the Trainer cards from your hands into your decks.'
+}
+RawTrainerCard {
+  identification: Identification {
+    category: 'Trainer',
+    id: 'base1-76',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/76',
+    localId: '76',
+    rarity: 'Rare'
+  },
+  name: 'Pokémon Breeder',
+  effect: 'Put a Stage 2 Evolution card from your hand on the matching Basic Pokémon. You can only play this card when you would be allowed to evolve that Pokémon anyway.'
+}
+RawTrainerCard {
+  identification: Identification {
+    category: 'Trainer',
+    id: 'base1-77',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/77',
+    localId: '77',
+    rarity: 'Rare'
+  },
+  name: 'Pokémon Trader',
+  effect: 'Trade 1 of the Basic Pokémon or Evolution cards in your hand for 1 of the Basic Pokémon or Evolution cards from your deck. Show both cards to your opponent. Shuffle your deck afterward.'
+}
+RawTrainerCard {
+  identification: Identification {
+    category: 'Trainer',
+    id: 'base1-78',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/78',
+    localId: '78',
+    rarity: 'Rare'
+  },
+  name: 'Scoop Up',
+  effect: 'Choose 1 of your Pokémon in play and return its Basic Pokémon card to your hand. (Discard all cards attached to that card.)'
+}
+RawTrainerCard {
+  identification: Identification {
+    category: 'Trainer',
+    id: 'base1-79',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/79',
+    localId: '79',
+    rarity: 'Rare'
+  },
+  name: 'Super Energy Removal',
+  effect: "Discard 1 Energy card attached to 1 of your Pokémon in order to choose 1 of your opponent's Pokémon and up to 2 Energy cards attached to it. Discard those Energy cards."
+}
+RawTrainerCard {
+  identification: Identification {
+    category: 'Trainer',
+    id: 'base1-80',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/80',
+    localId: '80',
+    rarity: 'Uncommon'
+  },
+  name: 'Defender',
+  effect: "Attach Defender to 1 of your Pokémon. At the end of your opponent's next turn, discard Defender. Damage done to that Pokémon by attacks is reduced by 20 (after applying Weakness and Resistance)."
+}
+RawTrainerCard {
+  identification: Identification {
+    category: 'Trainer',
+    id: 'base1-81',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/81',
+    localId: '81',
+    rarity: 'Uncommon'
+  },
+  name: 'Energy Retrieval',
+  effect: 'Trade 1 of the other cards in your hand for up to 2 basic Energy cards from your discard pile.'
+}
+RawTrainerCard {
+  identification: Identification {
+    category: 'Trainer',
+    id: 'base1-82',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/82',
+    localId: '82',
+    rarity: 'Uncommon'
+  },
+  name: 'Full Heal',
+  effect: 'Your Active Pokémon is no longer Asleep, Confused, Paralyzed, or Poisoned.'
+}
+RawTrainerCard {
+  identification: Identification {
+    category: 'Trainer',
+    id: 'base1-83',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/83',
+    localId: '83',
+    rarity: 'Uncommon'
+  },
+  name: 'Maintenance',
+  effect: 'Shuffle 2 of the other cards from your hand into your deck in order to draw a card.'
+}
+RawTrainerCard {
+  identification: Identification {
+    category: 'Trainer',
+    id: 'base1-84',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/84',
+    localId: '84',
+    rarity: 'Uncommon'
+  },
+  name: 'PlusPower',
+  effect: "Attach PlusPower to your Active Pokémon. At the end of your turn, discard PlusPower. If this Pokémon's attack does damage to the Defending Pokémon (after applying Weakness and Resistance), the attack does 10 more damage to the Defending Pokémon."
+}
+RawTrainerCard {
+  identification: Identification {
+    category: 'Trainer',
+    id: 'base1-85',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/85',
+    localId: '85',
+    rarity: 'Uncommon'
+  },
+  name: 'Pokémon Center',
+  effect: 'Remove all damage counters from all of your own Pokémon with damage counters on them, then discard all Energy cards attached to those Pokémon.'
+}
+RawTrainerCard {
+  identification: Identification {
+    category: 'Trainer',
+    id: 'base1-86',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/86',
+    localId: '86',
+    rarity: 'Uncommon'
+  },
+  name: 'Pokémon Flute',
+  effect: "Choose 1 Basic Pokémon card from your opponent's discard pile and put it onto his or her Bench. (You can't play Pokémon Flute if your opponent's Bench is full.)"
+}
+RawTrainerCard {
+  identification: Identification {
+    category: 'Trainer',
+    id: 'base1-87',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/87',
+    localId: '87',
+    rarity: 'Uncommon'
+  },
+  name: 'Pokédex',
+  effect: 'Look at up to 5 cards from the top of your deck and rearrange them as you like.'
+}
+RawTrainerCard {
+  identification: Identification {
+    category: 'Trainer',
+    id: 'base1-88',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/88',
+    localId: '88',
+    rarity: 'Uncommon'
+  },
+  name: 'Professor Oak',
+  effect: 'Discard your hand, then draw 7 cards.'
+}
+RawTrainerCard {
+  identification: Identification {
+    category: 'Trainer',
+    id: 'base1-89',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/89',
+    localId: '89',
+    rarity: 'Uncommon'
+  },
+  name: 'Revive',
+  effect: "Put 1 Basic Pokémon card from your discard pile onto your Bench. Put damage counters on that Pokémon equal to half its HP (rounded down to the nearest 10). (You can't play Revive if your Bench is full.)"
+}
+RawTrainerCard {
+  identification: Identification {
+    category: 'Trainer',
+    id: 'base1-90',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/90',
+    localId: '90',
+    rarity: 'Uncommon'
+  },
+  name: 'Super Potion',
+  effect: 'Discard 1 Energy card attached to your own Pokémon in order to remove up to 4 damage counters from that Pokémon.'
+}
+RawTrainerCard {
+  identification: Identification {
+    category: 'Trainer',
+    id: 'base1-91',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/91',
+    localId: '91',
+    rarity: 'Common'
+  },
+  name: 'Bill',
+  effect: 'Draw 2 cards.'
+}
+RawTrainerCard {
+  identification: Identification {
+    category: 'Trainer',
+    id: 'base1-92',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/92',
+    localId: '92',
+    rarity: 'Common'
+  },
+  name: 'Energy Removal',
+  effect: "Choose 1 Energy card attached to 1 of your opponent's Pokémon and discard it."
+}
+RawTrainerCard {
+  identification: Identification {
+    category: 'Trainer',
+    id: 'base1-93',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/93',
+    localId: '93',
+    rarity: 'Common'
+  },
+  name: 'Gust of Wind',
+  effect: "Choose 1 of your opponent's Benched Pokémon and switch it with his or her Active Pokémon."
+}
+RawTrainerCard {
+  identification: Identification {
+    category: 'Trainer',
+    id: 'base1-94',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/94',
+    localId: '94',
+    rarity: 'Common'
+  },
+  name: 'Potion',
+  effect: 'Remove up to 2 damage counters from 1 of your Pokémon.'
+}
+RawTrainerCard {
+  identification: Identification {
+    category: 'Trainer',
+    id: 'base1-95',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/95',
+    localId: '95',
+    rarity: 'Common'
+  },
+  name: 'Switch',
+  effect: 'Switch 1 of your own Benched Pokémon with your Active Pokémon.'
+}

@@ -3,7 +3,7 @@ import CardContainer from './CardContainer';
 
 export default function Cardview() {
   const { data, error } = useLoaderData();
-  console.log(data);
+  
   if (error) {
     return (
       <>
