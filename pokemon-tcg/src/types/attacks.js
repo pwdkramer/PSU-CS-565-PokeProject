@@ -2,52 +2,18 @@ import {
   statusEffects,
   targets,
   energyTypes,
+  customActions,
   DamageAction,
   CoinDamageAction,
   CoinFlipAction,
   StatusAction,
   DiscardEnergyAction,
-  BenchDamageAction,
-  ShieldAction,
   BenchSwap,
   DamageCounterMultiplier,
-  HealAction,
-  SealAttackAction,
   ChangeAttributeAction,
   ExtraEnergyDamage,
   CustomAction,
 } from './actions.js';
-
-// attacks shared across multiple pokemon (for simplicity)
-/*const Shared = {
-  confuseRay: (flip, dmg) => [
-    new DamageAction(targets.defender, dmg),
-    new CoinFlipAction(flip, [
-      new StatusAction(targets.defender, statusEffects.confused),
-    ]),
-  ],
-  coinFlipStatusEffect: (flip, effect, target = targets.defender) => [
-    new CoinFlipAction(flip, [new StatusAction(target, effect)]),
-  ],
-  coinFlipStatusEffectDamage: (
-    dmg,
-    flip,
-    effect,
-    target = targets.defender,
-  ) => [
-    new DamageAction(target, dmg),
-    new CoinFlipAction(flip, [new StatusAction(target, effect)]),
-  ],
-  preventDamageOn: (flip) => [
-    new CoinFlipAction(flip, [
-      new ShieldAction(targets.self, 'prevent_damage'),
-    ]),
-  ],
-  discardSelfEnergy: (discardCount, dmg) => [
-    new DiscardEnergyAction(targets.self, discardCount),
-    ...(dmg > 0 ? [new DamageAction(targets.defender, dmg)] : []),
-  ],
-};*/
 
 export const ATTACK_EFFECTS = Object.freeze({
   'base1-1': {
@@ -80,8 +46,9 @@ export const ATTACK_EFFECTS = Object.freeze({
   'base1-4': {
     // Charizard
     'Fire Spin': [
-      new DiscardEnergyAction(targets.self, 2),
-      new DamageAction(targets.defender, 100),
+      new DiscardEnergyAction(targets.self, 2, [
+        new DamageAction(targets.defender, 100),
+      ]),
     ],
   },
   'base1-5': {
@@ -91,7 +58,7 @@ export const ATTACK_EFFECTS = Object.freeze({
         new StatusAction(targets.defender, statusEffects.sleep),
       ]),
     ],
-    Metronome: [new CustomAction('Metronome')],
+    Metronome: [new CustomAction(customActions.metronome)],
   },
   'base1-6': {
     // Gyarados
@@ -128,10 +95,11 @@ export const ATTACK_EFFECTS = Object.freeze({
   },
   'base1-10': {
     // Mewtwo
-    Psychic: [new CustomAction('Psychic')],
+    Psychic: [new CustomAction(customActions.pyschic)],
     Barrier: [
-      new DiscardEnergyAction(targets.self, 1),
-      new StatusAction(targets.self, statusEffects.invincible),
+      new DiscardEnergyAction(targets.self, 1, [
+        new StatusAction(targets.self, statusEffects.invincible),
+      ]),
     ],
   },
   'base1-11': {
@@ -155,8 +123,9 @@ export const ATTACK_EFFECTS = Object.freeze({
     // Ninetales
     Lure: [new BenchSwap(targets.self)],
     'Fire Blast': [
-      new DiscardEnergyAction(targets.self, 1),
-      new DamageAction(targets.defender, 80),
+      new DiscardEnergyAction(targets.self, 1, [
+        new DamageAction(targets.defender, 80),
+      ]),
     ],
   },
   'base1-13': {
@@ -259,13 +228,14 @@ export const ATTACK_EFFECTS = Object.freeze({
       new DamageAction(targets.defender, 20),
       new BenchSwap(targets.defender),
     ],
-    'Mirror Move': [new CustomAction('Mirror Move')],
+    'Mirror Move': [new CustomAction(customActions.mirrorMove)],
   },
   'base1-23': {
     // Arcanine
     Flamethrower: [
-      new DiscardEnergyAction(targets.self, 1),
-      new DamageAction(targets.defender, 50),
+      new DiscardEnergyAction(targets.self, 1, [
+        new DamageAction(targets.defender, 50),
+      ]),
     ],
     'Take Down': [
       new DamageAction(targets.defender, 80),
@@ -276,8 +246,9 @@ export const ATTACK_EFFECTS = Object.freeze({
     // Charmeleon
     Slash: [new DamageAction(targets.defender, 30)],
     Flamethrower: [
-      new DiscardEnergyAction(targets.self, 1),
-      new DamageAction(targets.defender, 50),
+      new DiscardEnergyAction(targets.self, 1, [
+        new DamageAction(targets.defender, 50),
+      ]),
     ],
   },
   'base1-25': {
@@ -308,12 +279,9 @@ export const ATTACK_EFFECTS = Object.freeze({
     Flare: [new DamageAction(targets.defender, 20)],
   },
   'base1-29': {
+    // Haunter
     Hypnosis: [new StatusAction(targets.defender, statusEffects.sleep)],
-    'Dream Eater': [
-      new Requirement(statusEffects.sleep, [
-        new DamageAction(targets.defender, 50),
-      ]),
-    ],
+    'Dream Eater': [new CustomAction(customActions.dreamEater)],
   },
   'base1-30': {
     // Ivysaur
@@ -333,8 +301,9 @@ export const ATTACK_EFFECTS = Object.freeze({
   'base1-32': {
     // Kadabra
     Recover: [
-      new DiscardEnergyAction(targets.self, 1),
-      new HealAction(targets.self, 'all'),
+      new DiscardEnergyAction(targets.self, 1, [
+        new DamageAction(targets.self, -999),
+      ]),
     ],
     'Super Psy': [new DamageAction(targets.defender, 50)],
   },
@@ -371,8 +340,9 @@ export const ATTACK_EFFECTS = Object.freeze({
     // Magmar
     'Fire Punch': [new DamageAction(targets.defender, 30)],
     Flamethrower: [
-      new DiscardEnergyAction(targets.self, 1),
-      new DamageAction(targets.defender, 50),
+      new DiscardEnergyAction(targets.self, 1, [
+        new DamageAction(targets.defender, 50),
+      ]),
     ],
   },
   'base1-37': {
@@ -382,7 +352,7 @@ export const ATTACK_EFFECTS = Object.freeze({
   },
   'base1-38': {
     // Poliwhirl
-    Amnesia: [new SealAttackAction()],
+    Amnesia: [new StatusAction(targets.defender, statusEffects.amnesia)],
     Doubleslap: [new CoinDamageAction(CoinFlipAction.heads, 2, 30)],
   },
   'base1-39': {
@@ -393,7 +363,7 @@ export const ATTACK_EFFECTS = Object.freeze({
   'base1-40': {
     // Raticate
     Bite: [new DamageAction(targets.defender, 20)],
-    'Super Fang': [new CustomAction('Super Fang')],
+    'Super Fang': [new CustomAction(customActions.superFang)],
   },
   'base1-41': {
     // Seel
@@ -421,7 +391,7 @@ export const ATTACK_EFFECTS = Object.freeze({
     // Bulbasaur
     'Leech Seed': [
       new DamageAction(targets.defender, 20, [
-        new HealAction(targets.self, 10),
+        new DamageAction(targets.self, -10),
       ]),
     ],
   },
@@ -438,8 +408,9 @@ export const ATTACK_EFFECTS = Object.freeze({
     // Charmander
     Scratch: [new DamageAction(targets.defender, 10)],
     Ember: [
-      new DiscardEnergyAction(targets.self, 1),
-      new DamageAction(targets.defender, 30),
+      new DiscardEnergyAction(targets.self, 1, [
+        new DamageAction(targets.defender, 30),
+      ]),
     ],
   },
   'base1-47': {
@@ -469,8 +440,9 @@ export const ATTACK_EFFECTS = Object.freeze({
       ]),
     ],
     'Destiny Bond': [
-      new DiscardEnergyAction(targets.self, 1),
-      new StatusAction(targets.self, statusEffects.revenge),
+      new DiscardEnergyAction(targets.self, 1, [
+        new StatusAction(targets.self, statusEffects.revenge),
+      ]),
     ],
   },
   'base1-51': {
@@ -527,7 +499,7 @@ export const ATTACK_EFFECTS = Object.freeze({
   'base1-56': {
     // Onix
     'Rock Throw': [new DamageAction(targets.defender, 10)],
-    Harden: [new CustomAction('Harden')],
+    Harden: [new StatusAction(targets.self, statusEffects.harden)],
   },
   'base1-57': {
     // Pidgey
@@ -565,7 +537,7 @@ export const ATTACK_EFFECTS = Object.freeze({
     // Sandshrew
     'Sand-attack': [
       new DamageAction(targets.defender, 10),
-      new CustomAction('Sand-attack'),
+      new StatusAction(targets.defender, statusEffects.blind),
     ],
   },
   'base1-63': {
@@ -585,8 +557,9 @@ export const ATTACK_EFFECTS = Object.freeze({
   'base1-64': {
     // Starmie
     Recover: [
-      new DiscardEnergyAction(targets.self, 1),
-      new HealAction(targets.self, 'all'),
+      new DiscardEnergyAction(targets.self, 1, [
+        new DamageAction(targets.self, -999),
+      ]),
     ],
     'Star Freeze': [
       new DamageAction(targets.defender, 20),

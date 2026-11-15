@@ -1,3 +1,5 @@
+import { statusEffects } from './actions';
+
 export class Identification {
   category = '';
   id = '';
@@ -47,6 +49,10 @@ export class EvolveFrom {
       });
     }
   }
+
+  isEvolved() {
+    return this.stage > 0;
+  }
 }
 
 export class RawPokemonCard {
@@ -61,6 +67,9 @@ export class RawPokemonCard {
   attacks = [];
   weaknesses = [];
 
+  attachedEnergy = []; // energy cards
+  statuses = [];
+
   constructor(rawData) {
     this.identification = new Identification(rawData);
     this.evolveFrom = new EvolveFrom(rawData);
@@ -72,6 +81,41 @@ export class RawPokemonCard {
     this.abilities = abilities;
     this.attacks = attacks;
     this.weaknesses = weaknesses;
+
+    this.attachedEnergy = []; // energy cards
+    this.statuses = [];
+  }
+
+  isEvolved() {
+    return this.evolveFrom?.isEvolved() ?? false;
+  }
+
+  getStage() {
+    return this.evolveFrom?.stage ?? 0;
+  }
+
+  getAttachedEnergy() {
+    return this.attachedEnergy;
+  }
+
+  getStatusEffects() {
+    return this.statuses;
+  }
+
+  hasPokemonPower() {
+    return this.abilities ? true : false;
+  }
+
+  canUsePokemonPower() {
+    // blocked if asleep, confused, or paralyzed
+    if (!this.hasPokemonPower()) return false;
+
+    const current = this.getStatusEffects();
+    return (
+      !current.includes(statusEffects.sleep) &&
+      !current.includes(statusEffects.confused) &&
+      !current.includes(statusEffects.paralyze)
+    );
   }
 }
 
