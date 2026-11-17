@@ -87,9 +87,9 @@ export default class DB {
       return false;
     }
 
-    const { id, wins, losses } = ret;
+    const { id, userpassword, wins, losses } = ret;
 
-    if (password !== password) {
+    if (password !== userpassword) {
       return false;
     }
 
