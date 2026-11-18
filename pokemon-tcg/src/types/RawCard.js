@@ -1,4 +1,4 @@
-import { statusEffects } from './actions';
+import { statusEffects } from './actions.js';
 
 export class Identification {
   category = '';

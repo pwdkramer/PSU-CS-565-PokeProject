@@ -1,4 +1,4 @@
-import { cardGroups, filterTypes } from './actions';
+import { cardGroups, filterTypes } from './actions.js';
 import { RawPokemonCard, RawTrainerCard, RawEnergyCard } from './rawCard.js';
 
 export default class Player {
