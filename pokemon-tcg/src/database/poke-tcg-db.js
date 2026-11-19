@@ -46,7 +46,7 @@ export default class DB {
     this.database = new Database('pokemon-tcg.db');
 
     this.database.exec(
-      'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT NOT NULL, password TEXT NOT NULL, wins INTEGER NOT NULL, losses INTEGER NOT NULL)',
+      'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT NOT NULL UNIQUE, password TEXT NOT NULL, wins INTEGER NOT NULL, losses INTEGER NOT NULL)',
     );
 
     // decks table, columsn: id (does not auto increment - pivot on users->id), decks1 ,2 ,3 which will be card ids JSON.stringify-ied
