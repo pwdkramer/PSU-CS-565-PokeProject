@@ -1,0 +1,77 @@
+RawEnergyCard {
+  identification: Identification {
+    category: 'Energy',
+    id: 'base1-96',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/96',
+    localId: '96',
+    rarity: 'Uncommon'
+  },
+  name: 'Double Colorless Energy',
+  energyType: 'Special'
+}
+RawEnergyCard {
+  identification: Identification {
+    category: 'Energy',
+    id: 'base1-97',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/97',
+    localId: '97',
+    rarity: 'Common'
+  },
+  name: 'Fighting Energy',
+  energyType: 'Normal'
+}
+RawEnergyCard {
+  identification: Identification {
+    category: 'Energy',
+    id: 'base1-98',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/98',
+    localId: '98',
+    rarity: 'Common'
+  },
+  name: 'Fire Energy',
+  energyType: 'Normal'
+}
+RawEnergyCard {
+  identification: Identification {
+    category: 'Energy',
+    id: 'base1-99',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/99',
+    localId: '99',
+    rarity: 'Common'
+  },
+  name: 'Grass Energy',
+  energyType: 'Normal'
+}
+RawEnergyCard {
+  identification: Identification {
+    category: 'Energy',
+    id: 'base1-100',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/100',
+    localId: '100',
+    rarity: 'Common'
+  },
+  name: 'Lightning Energy',
+  energyType: 'Normal'
+}
+RawEnergyCard {
+  identification: Identification {
+    category: 'Energy',
+    id: 'base1-101',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/101',
+    localId: '101',
+    rarity: 'Common'
+  },
+  name: 'Psychic Energy',
+  energyType: 'Normal'
+}
+RawEnergyCard {
+  identification: Identification {
+    category: 'Energy',
+    id: 'base1-102',
+    imageLocation: 'https://assets.tcgdex.net/en/base/base1/102',
+    localId: '102',
+    rarity: 'Common'
+  },
+  name: 'Water Energy',
+  energyType: 'Normal'
+}
