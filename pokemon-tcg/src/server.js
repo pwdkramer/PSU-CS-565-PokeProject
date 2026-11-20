@@ -1,14 +1,9 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import database, { User, Decks } from './database/poke-tcg-db.js';
-import { buildRawCard, updateCardFields } from './types/rawCard.js';
-
-import { Console } from 'node:console';
-import { createWriteStream } from 'fs';
-
-const logFile = createWriteStream('./allcards.log', { flags: 'a' });
-const fileLogger = new Console({ stdout: logFile, stderr: logFile });
+import DB from './database/poke-tcg-db.js';
+import { buildRawCard, updateCardFields } from './types/RawCard.js';
+import { installAuth } from './auth.js';
 
 // footer reference: <a target="_blank" href="https://icons8.com/icon/8gTxcIoC22Bp/pokemonball">Pokemonball</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
 // <a target="_blank" href="https://icons8.com/icon/45657/up-arrow">Up Arrow</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
@@ -19,6 +14,8 @@ const fileLogger = new Console({ stdout: logFile, stderr: logFile });
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const port = process.env.PORT || 5001;
+const db = new DB(process.env.DATABASE_PATH || path.join(__dirname, '..', 'pokemon-tcg.db'));
+installAuth(app, db);
 
 const Endpoint = 'https://api.tcgdex.net/v2/en';
 
