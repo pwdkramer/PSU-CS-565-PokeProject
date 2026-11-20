@@ -31,6 +31,11 @@ export default function Deckbuild() {
     );
   }
 
+  function submitDeck() {
+    const cardIds = deck.map((card) => card.id);
+    console.log(cardIds);
+  }
+
   return (
     <>
       <h1>Deck Builder</h1>
@@ -69,6 +74,9 @@ export default function Deckbuild() {
               actionLabel="Remove"
             />
           </div>
+          <button type="button" onClick={submitDeck}>
+            Submit Deck
+          </button>
         </section>
       </div>
     </>
