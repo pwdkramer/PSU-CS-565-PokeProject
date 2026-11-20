@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DatabaseSync } from 'node:sqlite';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -38,67 +37,6 @@ test('registration, credentials, and sessions survive reopening the database', (
     db.deleteSession(nextToken);
     assert.equal(db.getSessionUser(nextToken), null);
     assert.equal(db.getSessionUser('forged'), null);
-  } finally {
-    db.database.close();
-    rmSync(directory, { recursive: true });
-  }
-});
-
-test('original users schema migrates while preserving users and decks', () => {
-  const directory = mkdtempSync(path.join(tmpdir(), 'poke-migration-'));
-  const filename = path.join(directory, 'test.db');
-  const legacy = new DatabaseSync(filename);
-  legacy.exec(`CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT NOT NULL UNIQUE,
-    password TEXT NOT NULL, wins INTEGER NOT NULL, losses INTEGER NOT NULL);
-    INSERT INTO users VALUES (1, 'original', 'oldpass', 3, 2);
-    CREATE TABLE decks (id INT PRIMARY KEY NOT NULL, deck1 TEXT, deck2 TEXT, deck3 TEXT);
-    INSERT INTO decks VALUES (1, '["base1-1"]', NULL, NULL);`);
-  legacy.close();
-  const db = new DB(filename);
-  try {
-    const user = db.validateLogin('original', 'oldpass');
-    assert.equal(user.wins, 3);
-    assert.deepEqual(db.getDecks(user).deck1, ['base1-1']);
-    assert.ok(!db.database.prepare('PRAGMA table_info(users)').all().some((column) => column.name === 'password'));
-  } finally {
-    db.database.close();
-    rmSync(directory, { recursive: true });
-  }
-});
-
-test('credentials schema migration preserves users and supports password resets', () => {
-  const directory = mkdtempSync(path.join(tmpdir(), 'poke-hash-migration-'));
-  const filename = path.join(directory, 'test.db');
-  const previous = new DatabaseSync(filename);
-  previous.exec(`
-    CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT NOT NULL UNIQUE, wins INTEGER NOT NULL, losses INTEGER NOT NULL);
-    INSERT INTO users VALUES (1, 'trainer', 3, 2);
-    CREATE TABLE credentials (user_id INTEGER PRIMARY KEY REFERENCES users(id), salt TEXT NOT NULL, password_hash TEXT NOT NULL);
-    INSERT INTO credentials VALUES (1, 'old-salt', 'old-hash');
-    CREATE TABLE sessions (token_hash TEXT PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES users(id), expires_at INTEGER NOT NULL);
-    INSERT INTO sessions VALUES ('old-session', 1, 9999999999999);
-    CREATE TABLE decks (id INT PRIMARY KEY NOT NULL, deck1 TEXT, deck2 TEXT, deck3 TEXT);
-    INSERT INTO decks VALUES (1, '["base1-1"]', NULL, NULL);
-  `);
-  previous.close();
-  let db = new DB(filename);
-  try {
-    assert.equal(db.validateLogin('trainer', 'old-hash'), false);
-    assert.equal(db.validateLogin('trainer', ''), false);
-    assert.deepEqual(db.database.prepare('PRAGMA table_info(credentials)').all().map((column) => column.name), ['user_id', 'password']);
-    assert.equal(db.database.prepare('SELECT COUNT(*) AS count FROM sessions').get().count, 0);
-    assert.equal(db.resetPassword('trainer', 'newpassword'), true);
-    const user = db.validateLogin('trainer', 'newpassword');
-    assert.equal(user.id, 1);
-    assert.equal(user.wins, 3);
-    assert.equal(user.losses, 2);
-    assert.deepEqual(db.getDecks(user).deck1, ['base1-1']);
-    const token = db.createSession(user);
-    db.database.close();
-    db = new DB(filename);
-    assert.equal(db.validateLogin('trainer', 'newpassword').id, 1);
-    assert.equal(db.getSessionUser(token).id, 1);
-    assert.ok(db.insertNewUser('newtrainer', 'password123'));
   } finally {
     db.database.close();
     rmSync(directory, { recursive: true });

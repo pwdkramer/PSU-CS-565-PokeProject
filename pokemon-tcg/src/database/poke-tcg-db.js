@@ -65,37 +65,6 @@ export default class DB {
       );
     `);
 
-    const credentialColumns = this.database.prepare('PRAGMA table_info(credentials)').all().map((column) => column.name);
-    if (credentialColumns.includes('password_hash')) {
-      this.database.exec('BEGIN');
-      try {
-        this.database.exec(`
-          ALTER TABLE credentials ADD COLUMN password TEXT;
-          ALTER TABLE credentials DROP COLUMN salt;
-          ALTER TABLE credentials DROP COLUMN password_hash;
-          DELETE FROM sessions;
-          COMMIT;
-        `);
-      } catch (error) {
-        this.database.exec('ROLLBACK');
-        throw error;
-      }
-    }
-
-    if (this.database.prepare('PRAGMA table_info(users)').all().some((column) => column.name === 'password')) {
-      this.database.exec('BEGIN');
-      try {
-        for (const user of this.database.prepare('SELECT id, password FROM users').all()) {
-          this.database.prepare('INSERT OR IGNORE INTO credentials (user_id, password) VALUES (?, ?)')
-            .run(user.id, user.password);
-        }
-        this.database.exec('ALTER TABLE users DROP COLUMN password; COMMIT');
-      } catch (error) {
-        this.database.exec('ROLLBACK');
-        throw error;
-      }
-    }
-
     // decks table, columsn: id (does not auto increment - pivot on users->id), decks1 ,2 ,3 which will be card ids JSON.stringify-ied
     this.database.exec(
       'CREATE TABLE IF NOT EXISTS decks (id INT PRIMARY KEY NOT NULL, deck1 TEXT, deck2 TEXT, deck3 TEXT)',
