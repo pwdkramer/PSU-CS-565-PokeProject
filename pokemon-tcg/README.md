@@ -28,8 +28,7 @@ and use HttpOnly, SameSite cookies. Set `NODE_ENV=production` when serving over
 HTTPS to enable Secure cookies.
 
 Run `npm test` for database and HTTP authentication integration checks and
-`npm run build` for the production bundle. The HTTP tests stub TCGdex responses;
-the live card service still requires network access.
+`npm run build` for the production bundle.
 
 ## Original template notes
 

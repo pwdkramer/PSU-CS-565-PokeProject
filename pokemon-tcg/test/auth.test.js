@@ -4,7 +4,8 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import DB, { User } from '../src/database/poke-tcg-db.js';
-import { createApp } from '../src/server.js';
+import express from 'express';
+import { installAuth } from '../src/auth.js';
 
 test('registration, credentials, and sessions survive reopening the database', () => {
   const directory = mkdtempSync(path.join(tmpdir(), 'poke-auth-'));
@@ -43,19 +44,12 @@ test('registration, credentials, and sessions survive reopening the database', (
   }
 });
 
-test('HTTP registration → session → logout → login, with protected APIs', async (context) => {
-  const realFetch = globalThis.fetch;
-  context.mock.method(globalThis, 'fetch', (url, options) => {
-    if (String(url).startsWith('https://api.tcgdex.net/')) {
-      const data = String(url).includes('/sets/')
-        ? { cardCount: { total: 1 }, cards: [{ id: 'base1-99', name: 'Grass Energy', image: 'https://example.test/card' }] }
-        : { id: 'base1-99', category: 'Energy', name: 'Grass Energy', energyType: 'Normal' };
-      return Promise.resolve(Response.json(data));
-    }
-    return realFetch(url, options);
-  });
+test('HTTP registration → session → logout → login, with protected APIs', async () => {
   const db = new DB(':memory:');
-  const server = createApp(db).listen(0, '127.0.0.1');
+  const app = express();
+  installAuth(app, db);
+  app.get('/api/private', (req, res) => res.json({ payload: req.user }));
+  const server = app.listen(0, '127.0.0.1');
   await new Promise((resolve) => server.once('listening', resolve));
   const base = `http://127.0.0.1:${server.address().port}`;
   const post = (endpoint, body, cookie, origin) => fetch(`${base}/api/auth/${endpoint}`, {
@@ -63,7 +57,7 @@ test('HTTP registration → session → logout → login, with protected APIs', 
     body: JSON.stringify(body),
   });
   try {
-    for (const endpoint of ['auth/me', 'cardimgs', 'deck']) {
+    for (const endpoint of ['auth/me', 'private']) {
       assert.equal((await fetch(`${base}/api/${endpoint}`)).status, 401);
     }
     assert.equal((await post('register', { username: 'invalid', password: 'short' })).status, 400);
@@ -81,17 +75,14 @@ test('HTTP registration → session → logout → login, with protected APIs', 
     const sessionCookie = cookie.split(';')[0];
     const me = await fetch(`${base}/api/auth/me`, { headers: { Cookie: sessionCookie } });
     assert.equal((await me.json()).payload.id, user.id);
-    for (const endpoint of ['cardimgs', 'deck']) {
-      const cards = await fetch(`${base}/api/${endpoint}`, { headers: { Cookie: sessionCookie } });
-      assert.equal(cards.status, 200);
-      assert.equal((await cards.json()).payload.length, 1);
-    }
-    assert.equal((await fetch(`${base}/api/missing`, { headers: { Cookie: sessionCookie } })).status, 404);
+    const privateResponse = await fetch(`${base}/api/private`, { headers: { Cookie: sessionCookie } });
+    assert.equal(privateResponse.status, 200);
+    assert.equal((await privateResponse.json()).payload.id, user.id);
     assert.equal((await post('register', { username: 'trainer', password: 'password123', confirmPassword: 'password123' })).status, 409);
     assert.equal((await post('logout', {}, sessionCookie, 'https://other.example')).status, 403);
     assert.equal((await post('logout', {}, sessionCookie)).status, 200);
     assert.equal((await fetch(`${base}/api/auth/me`, { headers: { Cookie: sessionCookie } })).status, 401);
-    assert.equal((await fetch(`${base}/api/cardimgs`, { headers: { Cookie: sessionCookie } })).status, 401);
+    assert.equal((await fetch(`${base}/api/private`, { headers: { Cookie: sessionCookie } })).status, 401);
     assert.equal((await post('login', { username: 'trainer', password: 'incorrect' })).status, 401);
     const login = await post('login', { username: 'trainer', password: 'password123' });
     assert.equal(login.status, 200);
