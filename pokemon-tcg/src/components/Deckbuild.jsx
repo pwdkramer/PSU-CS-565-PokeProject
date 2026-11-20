@@ -1,5 +1,5 @@
 import { useLoaderData } from 'react-router-dom';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import CardContainer from './CardContainer';
 
 export default function Deckbuild() {
@@ -16,6 +16,20 @@ export default function Deckbuild() {
     const matches = name.includes(query);
     return matches;
   });
+
+  const [deck, setDeck] = useState([]);
+  const nextCopyId = useRef(0);
+
+  function addCardToDeck(card) {
+    const newCard = { ...card, copyId: nextCopyId.current++ };
+    setDeck((currentDeck) => [...currentDeck, newCard]);
+  }
+
+  function removeCardFromDeck(card) {
+    setDeck((currentDeck) =>
+      currentDeck.filter((c) => c.copyId !== card.copyId)
+    );
+  }
 
   return (
     <>
@@ -34,7 +48,11 @@ export default function Deckbuild() {
           />
 
           <div className="deck-builder-results">
-            <CardContainer cards={visibleCards} />
+            <CardContainer
+              cards={visibleCards}
+              onCardClick={addCardToDeck}
+              actionLabel="Add"
+            />
           </div>
           
         </section>
@@ -45,7 +63,11 @@ export default function Deckbuild() {
           <p>Include at least one basic Pokemon</p>
           <p>Max of 4 copies of any card (excluding energy cards)</p>
           <div className="deck-builder-contents">
-            {/* Your deck content goes here */}
+            <CardContainer
+              cards={deck}
+              onCardClick={removeCardFromDeck}
+              actionLabel="Remove"
+            />
           </div>
         </section>
       </div>
