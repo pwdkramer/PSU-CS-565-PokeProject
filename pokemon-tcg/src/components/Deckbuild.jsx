@@ -41,7 +41,9 @@ export default function Deckbuild() {
 
         <section className="deck-builder-panel">
           <h2>Your deck</h2>
-          <p>Include at least one basic Pokemon. Max of 4x of each card excluding energy cards.</p>
+          <p>Deck must contain 60 cards</p>
+          <p>Include at least one basic Pokemon</p>
+          <p>Max of 4 copies of any card (excluding energy cards)</p>
           <div className="deck-builder-contents">
             {/* Your deck content goes here */}
           </div>
