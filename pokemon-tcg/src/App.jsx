@@ -1,4 +1,6 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, redirect } from 'react-router-dom';
+import Login from './components/Login';
+import { requireUser, loginLoader } from './auth-client';
 import Main from './components/Main';
 import Homepage from './components/Homepage';
 import Cardview from './components/Cardview';
@@ -21,6 +23,7 @@ const fetchCards = async function fetchCards(dataType) {
   try {
     const endpoint = getEndpoint(dataType);
     const response = await fetch(endpoint);
+    if (response.status === 401) throw redirect('/');
     const data = await response.json();
     
     if (!response.ok) {
@@ -35,6 +38,7 @@ const fetchCards = async function fetchCards(dataType) {
       error: null,
     };
   } catch (err) {
+    if (err instanceof Response) throw err;
     return {
       data: null,
       error: `${err}`,
@@ -47,16 +51,24 @@ const fetchCards = async function fetchCards(dataType) {
 const router = createBrowserRouter([
   {
     path: '/',
+    Component: Login,
+    loader: loginLoader,
+    HydrateFallback: () => <p role="status">Loading…</p>,
+  },
+  {
     Component: Main,
+    loader: requireUser,
+    HydrateFallback: () => <p role="status">Loading…</p>,
     children: [
       {
-        index: true,
+        path: '/home',
         Component: Homepage,
+        loader: requireUser,
       },
       {
         path: 'cardview',
         Component: Cardview,
-        loader: () => fetchCards('cardimgs'),
+        loader: async () => { await requireUser(); return fetchCards('cardimgs'); },
         // this is supposed to render during loading events.
         // See https://reactrouter.com/start/framework/route-module#hydratefallback
         HydrateFallback: () => {
@@ -66,7 +78,7 @@ const router = createBrowserRouter([
       {
         path: 'deckbuild',
         Component: Deckbuild,
-        loader: () => fetchCards('deckbuild'),
+        loader: async () => { await requireUser(); return fetchCards('deckbuild'); },
         // this is supposed to render during loading events.
         // See https://reactrouter.com/start/framework/route-module#hydratefallback
         HydrateFallback: () => {
