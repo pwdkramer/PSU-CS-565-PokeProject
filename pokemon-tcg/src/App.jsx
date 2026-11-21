@@ -3,15 +3,19 @@ import Main from './components/Main';
 import Homepage from './components/Homepage';
 import Cardview from './components/Cardview';
 import Deckbuild from './components/Deckbuild';
+import BattleArena from './components/BattleArena';
 import './App.css';
 
 // internal routes sent to server.js
 const getEndpoint = (dataType) => {
+  console.log(dataType);
   switch (dataType) {
     case 'cardimgs':
       return '/api/cardimgs';
     case 'deckbuild':
       return '/api/deck';
+    case 'battleArena':
+      return '/api/battle';
   }
 };
 
@@ -71,6 +75,16 @@ const router = createBrowserRouter([
         // See https://reactrouter.com/start/framework/route-module#hydratefallback
         HydrateFallback: () => {
           return <p role="status">Loading Cardview Route ...</p>;
+        },
+      },
+      {
+        path: 'battleArena',
+        Component: BattleArena,
+        loader: () => fetchCards('battleArena'),
+        // this is supposed to render during loading events.
+        // See https://reactrouter.com/start/framework/route-module#hydratefallback
+        HydrateFallback: () => {
+          return <p role="status">Loading Battle Arena ...</p>;
         },
       },
     ],

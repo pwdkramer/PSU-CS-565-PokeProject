@@ -4,12 +4,6 @@ import { fileURLToPath } from 'url';
 import database, { User, Decks } from './database/poke-tcg-db.js';
 import { buildRawCard, updateCardFields } from './types/rawCard.js';
 
-import { Console } from 'node:console';
-import { createWriteStream } from 'fs';
-
-const logFile = createWriteStream('./allcards.log', { flags: 'a' });
-const fileLogger = new Console({ stdout: logFile, stderr: logFile });
-
 // footer reference: <a target="_blank" href="https://icons8.com/icon/8gTxcIoC22Bp/pokemonball">Pokemonball</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
 // <a target="_blank" href="https://icons8.com/icon/45657/up-arrow">Up Arrow</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
 // <a target="_blank" href="https://icons8.com/icon/1X9wUcuHxlS2/pokemon-pointer">Pokemon Pointer</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
@@ -25,6 +19,22 @@ const Endpoint = 'https://api.tcgdex.net/v2/en';
 // cached http response data:
 let SET = null;
 let CARDS = null;
+
+// https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
+const shuffle = async function fisherYatersShuffleAlg(cardsArray) {
+  // bc of the indice swapping, I left this as a standard for loop rather than array method
+  const out = [...cardsArray];
+  const count = out.length;
+
+  for (let i = count - 1; i > 0; --i) {
+    const rand = Math.floor(Math.random() * (i + 1));
+    const temp = out[rand];
+    out[rand] = out[i];
+    out[i] = temp;
+  }
+
+  return out;
+};
 
 const getSet = async function getSetDataOnly() {
   if (SET) {
@@ -107,6 +117,29 @@ app.get('/api/deck', async (req, res) => {
   }
 });
 
+app.get('/api/battle', async (req, res) => {
+  // TEMPORARY - for testing the battle arena layout
+  try {
+    const cards = await getSet();
+    const shuffled = await shuffle(cards);
+
+    const payload = {
+      opponentBench: shuffled.slice(0, 5),
+      opponentActive: shuffled.slice(5, 6),
+      selfActive: shuffled.slice(6, 7),
+      selfBench: shuffled.slice(7, 12),
+      selfDeck: shuffled.slice(12, 65),
+    };
+
+    return res.status(200).json({
+      payload: payload,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      payload: `Failed to get card data: ${error}`,
+    });
+  }
+});
 // serve static files in dist dir such as favicon.svg, assets/index.js, assets/index.css
 app.use(express.static(path.join(__dirname, '..', 'dist')));
 

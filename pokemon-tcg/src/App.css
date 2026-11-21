@@ -209,9 +209,123 @@
   margin-bottom: auto;
 }
 
+.selectable {
+  cursor: pointer;
+}
+
 .cardImage {
   width: 100%;
   height: 100%;
   display: block;
   object-fit: fill;
+}
+
+.battleArena {
+  --card-h: clamp(65px, 20dvh, 400px);
+  display: grid;
+  height: 100dvh; /* 100% of dynamic viewport height */
+  width: 100%;
+  gap: 16px;
+  grid-template-columns: 1fr 3fr 1fr;
+  grid-template-rows: auto 1fr auto auto;
+  margin-top: 1%;
+  grid-template-areas:
+    'historyPan oppBench activePan'
+    'historyPan centerStage activePan'
+    'historyPan selfBench activePan'
+    'selfDeck selfDeck selfDeck';
+}
+
+#centerStage {
+  grid-area: centerStage;
+  position: relative; /*so that children with absolute lock to this ancerstor*/
+  /*display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;*/
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box; /* include padding and border in total size */
+  padding: 10px;
+  overflow: visible;
+}
+/* definitions for each of the grid-template-areas */
+#opponentBench {
+  grid-area: oppBench;
+}
+#battleHistory {
+  grid-area: historyPan;
+}
+#battleActions {
+  grid-area: activePan;
+}
+#selfBench {
+  grid-area: selfBench;
+}
+#selfDeck {
+  grid-area: selfDeck;
+}
+#opponentActive {
+  display: block;
+  position: absolute;
+  z-index: 2;
+  top: 10%;
+  right: 10%;
+  width: auto;
+  height: auto;
+}
+#selfActive {
+  display: block;
+  position: absolute;
+  z-index: 2;
+  bottom: 10%;
+  left: 10%;
+  width: auto;
+  height: auto;
+}
+#battleHistory,
+#battleActions {
+  margin: 3dvh 0 3dvh 0;
+  border: 1px solid var(--accent-border);
+  border-radius: 6px;
+  background-color: var(--accent-bg);
+  color: var(--text-h);
+}
+#selfActive .cardWrapper,
+#opponentActive .cardWrapper {
+  height: 20dvh;
+}
+.battleArena .cardContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+}
+.card-button {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.battleArena .cardWrapper {
+  height: var(--card-h);
+}
+
+#arenaIcon {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  inset: 0; /* shorthand for top,bottom,left,right=0 */
+  object-fit: cover; /* scale contents to fill container with clipping on overflow */
+  border: 1px solid transparent;
+  border-radius: 6px;
 }
