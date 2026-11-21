@@ -1,12 +1,13 @@
 import CardContainer from "./CardContainer";
 import ScrollableCardContainer from "./ScrollableCardContainer";
 import BattleHistory from "./BattleHistory";
+import BattleActionsPanel from "./BattleActionsPanel";
 import { useLoaderData } from 'react-router-dom';
 import {useState } from 'react'
 
 export default function BattleArena() {
   const { data, error } = useLoaderData();
-  console.log(data);
+  
   const {opponentBench:_opponentBench = [], opponentActive:_opponentActive = [], selfActive:_selfActive = [], selfBench:_selfBench = [], selfDeck:_selfDeck = []} = data ?? {};
 
   const [opponentBench, setOpponentBench] = useState(_opponentBench);
@@ -14,8 +15,27 @@ export default function BattleArena() {
   const [selfActive, setSelfActive] = useState(_selfActive);
   const [selfBench, setSelfBench] = useState(_selfBench);
   const [selfDeck, setSelfDeck] = useState(_selfDeck);
-  const [history, setHistory] = useState([]);
-  const [battleActions, setBattleActions] = useState([]);
+  const [history, setHistory] = useState([
+    {
+      text: "test message blahlb lhablhalhlksdlfjalsdfjksdlfjslkdjfklasjdfljsdlfjlasdjflsjdlfjdslf",
+      timestamp: Date.now(),
+      historyType: 'self'
+    },
+    {
+      text: "test message blahlb lhablhalhlksdlfjalsdfjksdlfjslkdjfklasjdfljsdlfjlasdjflsjdlfjdslf",
+      timestamp: Date.now(),
+      historyType: 'opponent'
+    },
+  ]);
+  const [battleActions, setBattleActions] = useState({
+      // Chansey
+      Scrunch: [
+        "Flip a coin. If heads, prevent all damage done to Chansey during your opponent's next turn. (Any other effects of attacks still happen.)"
+        ],
+      'Double-edge': [
+        "Chansey does 80 damage to itself."
+      ]
+    });
 
   if (error) {
     return (
@@ -41,7 +61,7 @@ export default function BattleArena() {
         
       </section>
       
-      <aside id="battleActions">Battle Actions</aside>
+      <BattleActionsPanel attackEffects={battleActions} onClick={(foo) => foo}/>
       
       <CardContainer cards={selfBench} id="selfBench" onCardClick={(foo) => foo}/>
       <ScrollableCardContainer cards={selfDeck} id="selfDeck" visibleCount={8} onCardClick={(foo) => foo}/>

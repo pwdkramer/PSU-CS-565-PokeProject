@@ -3,7 +3,7 @@ export default function BattleHistoryEntry({key, text, type='self'}) {
   
   return (
     <li key={key} className={`historyElement ${type}`}>
-      {`${text}`}
+        {`${text}`}
     </li>
   )
 }

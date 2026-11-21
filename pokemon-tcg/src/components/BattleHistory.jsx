@@ -1,6 +1,7 @@
+import { memo } from 'react';
 import BattleHistoryEntry from "./BattleHistoryEntry"
 
-export default function BattleHistory({history}) {
+export default memo(function BattleHistory({history}) {
   return (
   <aside id="battleHistoryContainer">
     Battle History
@@ -14,4 +15,4 @@ export default function BattleHistory({history}) {
     </ol>
     </aside>
   )
-}
+})
