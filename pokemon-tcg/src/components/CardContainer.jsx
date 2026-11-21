@@ -1,6 +1,12 @@
 import Card from './Card';
+import { memo } from 'react';
 
-export default function CardContainer({ cards, id, onCardClick, actionLabel, selectable, classNames = [] }) {
+/*
+  memo prevents this component from re-rendering on parent state change unless its 
+  props explicitly change: see https://react.dev/reference/react/memo
+*/
+
+export default memo(function CardContainer({ cards, id, onCardClick, actionLabel, classNames = [] }) {
   const classes = ['cardContainer', ...classNames].join(' ');
 
   return (
@@ -11,12 +17,11 @@ export default function CardContainer({ cards, id, onCardClick, actionLabel, sel
           <Card id={id} 
             image={image} 
             name={name} 
-            highres={false} 
+            highres={true} 
             onClick={onCardClick ? () => onCardClick(card) : undefined}
             actionLabel={actionLabel}
-            selectable={selectable}
           />);
       })}
     </ul>
   );
-}
+})

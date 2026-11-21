@@ -1,10 +1,22 @@
 import CardContainer from "./CardContainer";
-import Card from "./Card";
+import ScrollableCardContainer from "./ScrollableCardContainer";
+import BattleHistory from "./BattleHistory";
 import { useLoaderData } from 'react-router-dom';
+import {useState } from 'react'
 
 export default function BattleArena() {
   const { data, error } = useLoaderData();
-  
+  console.log(data);
+  const {opponentBench:_opponentBench = [], opponentActive:_opponentActive = [], selfActive:_selfActive = [], selfBench:_selfBench = [], selfDeck:_selfDeck = []} = data ?? {};
+
+  const [opponentBench, setOpponentBench] = useState(_opponentBench);
+  const [opponentActive, setOpponentActive] = useState(_opponentActive);
+  const [selfActive, setSelfActive] = useState(_selfActive);
+  const [selfBench, setSelfBench] = useState(_selfBench);
+  const [selfDeck, setSelfDeck] = useState(_selfDeck);
+  const [history, setHistory] = useState([]);
+  const [battleActions, setBattleActions] = useState([]);
+
   if (error) {
     return (
       <>
@@ -14,18 +26,17 @@ export default function BattleArena() {
     );
   }
 
-  const {opponentBench, opponentActive, selfActive, selfBench, selfDeck} = data;
-  
   return (
     <div className="battleArena">
       
       <CardContainer cards={opponentBench} id="opponentBench"/>
-      <aside id="battleHistory">Battle History</aside>
+    
+      <BattleHistory history={history} />
       
       <section id="centerStage">
         
-        <CardContainer cards={opponentActive} id="opponentActive" onCardClick={(foo) => foo}/>
-        <img id="arenaIcon" src="bg-forest.jpg"/>
+        <CardContainer cards={opponentActive} id="opponentActive"/>
+        <img id="arenaIcon" src="battle-arena.jpg"/>
         <CardContainer cards={selfActive} id="selfActive" onCardClick={(foo) => foo}/>
         
       </section>
@@ -33,7 +44,7 @@ export default function BattleArena() {
       <aside id="battleActions">Battle Actions</aside>
       
       <CardContainer cards={selfBench} id="selfBench" onCardClick={(foo) => foo}/>
-      <CardContainer cards={selfDeck} id="selfDeck"/>
+      <ScrollableCardContainer cards={selfDeck} id="selfDeck" visibleCount={8} onCardClick={(foo) => foo}/>
     </div>
   )
 }

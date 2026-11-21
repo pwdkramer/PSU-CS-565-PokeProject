@@ -227,8 +227,9 @@
   width: 100%;
   gap: 16px;
   grid-template-columns: 1fr 3fr 1fr;
-  grid-template-rows: auto 1fr auto auto;
-  margin-top: 1%;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  padding: 1% 0 1% 0;
+  box-sizing: border-box;
   grid-template-areas:
     'historyPan oppBench activePan'
     'historyPan centerStage activePan'
@@ -239,10 +240,10 @@
 #centerStage {
   grid-area: centerStage;
   position: relative; /*so that children with absolute lock to this ancerstor*/
-  /*display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;*/
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly; /* even spacing between and on the outsides */
+  align-items: center;
   width: 100%;
   height: 100%;
   min-height: 0;
@@ -254,7 +255,7 @@
 #opponentBench {
   grid-area: oppBench;
 }
-#battleHistory {
+#battleHistoryContainer {
   grid-area: historyPan;
 }
 #battleActions {
@@ -266,31 +267,29 @@
 #selfDeck {
   grid-area: selfDeck;
 }
-#opponentActive {
-  display: block;
-  position: absolute;
+#opponentActive,
+#selfActive {
+  position: relative;
   z-index: 2;
-  top: 10%;
-  right: 10%;
   width: auto;
   height: auto;
 }
-#selfActive {
-  display: block;
-  position: absolute;
-  z-index: 2;
-  bottom: 10%;
-  left: 10%;
-  width: auto;
-  height: auto;
+battleHistoryContainer {
+  margin: 3dvh 0 3dvh 0;
+  box-sizing: border-box;
+  list-style: none;
+  text-align: center;
 }
 #battleHistory,
 #battleActions {
-  margin: 3dvh 0 3dvh 0;
+  box-sizing: border-box;
   border: 1px solid var(--accent-border);
   border-radius: 6px;
   background-color: var(--accent-bg);
   color: var(--text-h);
+  list-style: none;
+  text-align: center;
+  height: 100%;
 }
 #selfActive .cardWrapper,
 #opponentActive .cardWrapper {
@@ -326,6 +325,50 @@
   z-index: 0;
   inset: 0; /* shorthand for top,bottom,left,right=0 */
   object-fit: cover; /* scale contents to fill container with clipping on overflow */
-  border: 1px solid transparent;
+  border: 1px solid var(--accent);
   border-radius: 6px;
+}
+
+#root:has(div.battleArena) {
+  width: 90dvw; /* expand the battle arena, is possible */
+  border-inline: 0px; /* remove vertical lines */
+}
+
+.scrollableCardContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 16px;
+  align-items: center;
+  overflow: visible;
+}
+
+.scrollableCardContainer .cardContainer {
+  width: auto; /* important so thatthe scroll buttons are next to the cards */
+}
+
+.navigationButton {
+  color: var(--accent);
+  font-weight: bold;
+  cursor: pointer;
+  display: inline-block;
+  height: 80%;
+  font-size: 3rem;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  text-align: center;
+}
+.navigationButton:disabled {
+  cursor: default;
+  color: var(--accent-bg);
+  border: 1px solid var(--accent-bg);
+}
+
+.historyElement {
+  background-color: var(--code-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-top: 2%;
+  text-align: left;
 }
