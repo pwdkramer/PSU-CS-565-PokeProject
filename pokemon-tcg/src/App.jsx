@@ -5,6 +5,7 @@ import Cardview from './components/Cardview';
 import Deckbuild from './components/Deckbuild';
 import BattleArena from './components/BattleArena';
 import { buildRawCard } from './types/rawCard.js'
+import ErrorPage from './components/ErrorPage.jsx';
 import './App.css';
 
 
@@ -73,6 +74,7 @@ const router = createBrowserRouter([
   {
     path: '/',
     Component: Main,
+    ErrorBoundary: ErrorPage,
     children: [
       {
         index: true,
