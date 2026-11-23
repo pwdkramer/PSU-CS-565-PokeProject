@@ -1,14 +1,14 @@
 import { memo } from 'react';
 import BattleActionsPanelEntry from './BattleActionsPanelEntry';
 
-export default memo(function BattleActionsPanel({attackEffects, onClick}) {
+export default memo(function BattleActionsPanel({attacks, onClick}) {
   return (
     <aside id="battleActionsContainer">
       Battle Actions
       <ol id="battleActions">
-        {Object.entries(attackEffects).map(([attackName, attackDetails]) => {
+        {attacks.map((attack) => {
           return (
-            <BattleActionsPanelEntry key={attackName} attackName={attackName} attackDetails={attackDetails} onClick={onClick}/>
+            <BattleActionsPanelEntry attack={attack} onClick={onClick}/>
           );
         })}
       </ol>

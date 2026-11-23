@@ -3,39 +3,80 @@ import ScrollableCardContainer from "./ScrollableCardContainer";
 import BattleHistory from "./BattleHistory";
 import BattleActionsPanel from "./BattleActionsPanel";
 import { useLoaderData } from 'react-router-dom';
-import {useState } from 'react'
+import { useState, useCallback, useRef } from 'react'
+import CARD_ANIMATIONS from '../animations/cardAnimations.js'
 
 export default function BattleArena() {
   const { data, error } = useLoaderData();
-  
+
   const {opponentBench:_opponentBench = [], opponentActive:_opponentActive = [], selfActive:_selfActive = [], selfBench:_selfBench = [], selfDeck:_selfDeck = []} = data ?? {};
 
+  const cardRefs = useRef(new Map());
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [selected, setSelected] = useState(null);
   const [opponentBench, setOpponentBench] = useState(_opponentBench);
   const [opponentActive, setOpponentActive] = useState(_opponentActive);
   const [selfActive, setSelfActive] = useState(_selfActive);
   const [selfBench, setSelfBench] = useState(_selfBench);
   const [selfDeck, setSelfDeck] = useState(_selfDeck);
-  const [history, setHistory] = useState([
-    {
-      text: "test message blahlb lhablhalhlksdlfjalsdfjksdlfjslkdjfklasjdfljsdlfjlasdjflsjdlfjdslf",
-      timestamp: Date.now(),
-      historyType: 'self'
-    },
-    {
-      text: "test message blahlb lhablhalhlksdlfjalsdfjksdlfjslkdjfklasjdfljsdlfjlasdjflsjdlfjdslf",
-      timestamp: Date.now(),
-      historyType: 'opponent'
-    },
-  ]);
-  const [battleActions, setBattleActions] = useState({
-      // Chansey
-      Scrunch: [
-        "Flip a coin. If heads, prevent all damage done to Chansey during your opponent's next turn. (Any other effects of attacks still happen.)"
-        ],
-      'Double-edge': [
-        "Chansey does 80 damage to itself."
-      ]
+  const [history, setHistory] = useState([]);
+  const [battleActions, setBattleActions] = useState([]);
+
+  const registerCardRef = useCallback((id, node) => {
+    if (node) {
+      cardRefs.current.set(id, node);
+    } else {
+      cardRefs.current.delete(id);
+    }
+  }, []);
+  const onActiveClickHandler = useCallback((card) => {
+    console.log('in');
+    setBattleActions(card.attacks);
+    setSelected(card);
+  }, []);
+  const onBenchClickHandler = useCallback((card) => {
+    setBattleActions(card.attacks);
+    setSelected(card);
+  }, []);
+  const onDeckClickHandler = useCallback((card) => {
+    console.log("deck", card);
+  }, []);
+  const onAttackClickHandler = useCallback(async (attack) => {
+    console.log("attack", attack);
+    console.log(selected);
+    if (isAnimating || !selected) {
+      return;
+    }
+
+    // need to validate attack is possible and websocket to server!
+    // then, if successful:
+    
+    const attackingCard = cardRefs.current.get(selected.id);
+    setIsAnimating(true);
+    const animation = CARD_ANIMATIONS.AttackSelf;
+
+    attackingCard.animate(
+      animation.action,
+      animation.timing
+    );
+
+    await animation.finished;
+
+    if (selected) {
+      setHistory((prev) => {
+        return [
+          ...prev, 
+          {
+            text: `${selected.name}: Attack using ${attack.name} for ${attack.damage} damage`,
+            timestamp: Date.now(),
+            historyType: 'self'
+          }
+        ];
     });
+    }
+
+    setIsAnimating(false);
+  }, [selected, isAnimating]);
 
   if (error) {
     return (
@@ -49,22 +90,22 @@ export default function BattleArena() {
   return (
     <div className="battleArena">
       
-      <CardContainer cards={opponentBench} id="opponentBench"/>
+      <CardContainer cards={opponentBench} selectedCardId={selected?.id} id="opponentBench"/>
     
       <BattleHistory history={history} />
       
       <section id="centerStage">
         
-        <CardContainer cards={opponentActive} id="opponentActive"/>
+        <CardContainer cards={opponentActive} selectedCardId={selected?.id} registerCardRef={registerCardRef} id="opponentActive"/>
         <img id="arenaIcon" src="battle-arena.jpg"/>
-        <CardContainer cards={selfActive} id="selfActive" onCardClick={(foo) => foo}/>
+        <CardContainer cards={selfActive} selectedCardId={selected?.id} registerCardRef={registerCardRef} id="selfActive" onCardClick={onActiveClickHandler}/>
         
       </section>
       
-      <BattleActionsPanel attackEffects={battleActions} onClick={(foo) => foo}/>
+      <BattleActionsPanel attacks={battleActions} onClick={onAttackClickHandler}/>
       
-      <CardContainer cards={selfBench} id="selfBench" onCardClick={(foo) => foo}/>
-      <ScrollableCardContainer cards={selfDeck} id="selfDeck" visibleCount={8} onCardClick={(foo) => foo}/>
+      <CardContainer cards={selfBench} id="selfBench" selectedCardId={selected?.id} registerCardRef={registerCardRef} onCardClick={onBenchClickHandler}/>
+      <ScrollableCardContainer cards={selfDeck} selectedCardId={selected?.id} id="selfDeck" visibleCount={8} onCardClick={onDeckClickHandler}/>
     </div>
   )
 }

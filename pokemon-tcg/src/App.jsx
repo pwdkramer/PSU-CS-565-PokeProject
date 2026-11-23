@@ -4,11 +4,14 @@ import Homepage from './components/Homepage';
 import Cardview from './components/Cardview';
 import Deckbuild from './components/Deckbuild';
 import BattleArena from './components/BattleArena';
+import { buildRawCard } from './types/rawCard.js'
 import './App.css';
+
+
+
 
 // internal routes sent to server.js
 const getEndpoint = (dataType) => {
-  console.log(dataType);
   switch (dataType) {
     case 'cardimgs':
       return '/api/cardimgs';
@@ -19,23 +22,41 @@ const getEndpoint = (dataType) => {
   }
 };
 
+const parseData = function parseAnyRawHttpData(dataType, data) {
+  if (dataType === 'battleArena') {
+    const ret = {};
+    Object.entries(data).forEach(([key, cards]) => {
+      console.log(key, cards);
+      ret[key] = cards.map((card) => {
+        return buildRawCard(card);
+      })
+    })
+
+    return ret;
+  }
+
+  return data;
+}
+
 // main data loader. If an error occurs, then it sets the error attribute to
 // indicate to the react page, else set data attribute
 const fetchCards = async function fetchCards(dataType) {
   try {
     const endpoint = getEndpoint(dataType);
     const response = await fetch(endpoint);
-    const data = await response.json();
+    const rawdata = await response.json();
     
     if (!response.ok) {
       return {
         data: null,
-        error: data.payload,
+        error: rawdata.payload,
       };
     }
 
+    const data = parseData(dataType, rawdata.payload);
+
     return {
-      data: data.payload,
+      data: data,
       error: null,
     };
   } catch (err) {

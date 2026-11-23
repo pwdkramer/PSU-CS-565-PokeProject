@@ -1,8 +1,8 @@
-const CARD_ANI = Object.freeze({
+const CARD_ANIMATIONS = Object.freeze({
   AttackSelf: {
     action: [
-      { transform: 'translateY(+40px)', offset: 0.25 }, // offset is % of total duration
-      { transform: 'translateY(-120px)', offset: 0.6 },
+      { transform: 'translateX(20cqw)', offset: 0.25 }, // offset is % of total duration
+      { transform: 'translateX(-30cqw)', offset: 0.6 },
       { transform: 'translateY(0)' },
     ],
     timing: {
@@ -52,3 +52,5 @@ const CARD_ANI = Object.freeze({
     },
   },
 });
+
+export default CARD_ANIMATIONS;

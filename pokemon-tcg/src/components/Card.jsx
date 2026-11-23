@@ -1,4 +1,4 @@
-export default function Card({ id, image, name, highres, onClick, buttonLabel }) {
+export default function Card({ id, image, name, highres, selected, onClick,  registerCardRef, buttonLabel }) {
   const cardImage = (    
     <img
       className="cardImage"
@@ -9,7 +9,11 @@ export default function Card({ id, image, name, highres, onClick, buttonLabel })
   );
 
   return (
-    <li key={id} className="cardWrapper">
+    <li 
+      key={id} 
+      className={selected ? "cardWrapper selected" : "cardWrapper"}
+      ref={(node) =>  registerCardRef?.(id, node)}
+    >
       {onClick ? (
         <button
           type="button"

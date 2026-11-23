@@ -2,7 +2,6 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import database, { User, Decks } from './database/poke-tcg-db.js';
-import { buildRawCard, updateCardFields } from './types/rawCard.js';
 
 // footer reference: <a target="_blank" href="https://icons8.com/icon/8gTxcIoC22Bp/pokemonball">Pokemonball</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
 // <a target="_blank" href="https://icons8.com/icon/45657/up-arrow">Up Arrow</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
@@ -62,6 +61,7 @@ const getSet = async function getSetDataOnly() {
 };
 
 const getCard = async function getSingleCard(id) {
+  // gets a full card data object, not the sets summary
   const path = `${Endpoint}/cards/${id}`;
 
   // ToDO: add retries!
@@ -72,7 +72,8 @@ const getCard = async function getSingleCard(id) {
   }
 
   const json = await response.json();
-  return buildRawCard(json);
+
+  return json;
 };
 
 const getCards = async function getCardsFromSetData() {
@@ -82,8 +83,22 @@ const getCards = async function getCardsFromSetData() {
 
   const set = await getSet();
   const cardData = await Promise.all(set.map((card) => getCard(card.id)));
-  updateCardFields(cardData);
 
+  // reponse has evolveFrom: string, so add the evolveFromId element which is the card.id which matches that evolveFrom string
+  cardData.forEach((card) => {
+    if (card.category === 'Pokemon') {
+      if (card.stage && card.stage !== 'Stage0') {
+        cardData.some((evalcard) => {
+          const { id, name } = evalcard;
+          if (name === card.name) {
+            card['evolveFromId'] = id;
+            return true; // early exit
+          }
+          return false;
+        });
+      }
+    }
+  });
   CARDS = cardData;
 
   return CARDS;
@@ -105,7 +120,7 @@ app.get('/api/cardimgs', async (req, res) => {
 
 app.get('/api/deck', async (req, res) => {
   try {
-    const cards = await getCards();
+    const cards = await getSet();
 
     return res.status(200).json({
       payload: cards,
@@ -120,7 +135,8 @@ app.get('/api/deck', async (req, res) => {
 app.get('/api/battle', async (req, res) => {
   // TEMPORARY - for testing the battle arena layout
   try {
-    const cards = await getSet();
+    const cards = await getCards();
+
     const shuffled = await shuffle(cards);
 
     const payload = {
