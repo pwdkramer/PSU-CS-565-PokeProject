@@ -1,4 +1,7 @@
 import { DatabaseSync } from 'node:sqlite';
+import { randomBytes, createHash } from 'node:crypto';
+
+const hashToken = (token) => createHash('sha256').update(token).digest('hex');
 
 export const DECKSIZE = 60;
 
@@ -42,12 +45,25 @@ export class Decks {
 export default class DB {
   database;
 
-  constructor() {
-    this.database = new Database('pokemon-tcg.db');
+  constructor(filename = 'pokemon-tcg.db') {
+    this.database = new DatabaseSync(filename);
+    this.database.exec('PRAGMA foreign_keys = ON');
 
     this.database.exec(
-      'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT NOT NULL UNIQUE, password TEXT NOT NULL, wins INTEGER NOT NULL, losses INTEGER NOT NULL)',
+      'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT NOT NULL UNIQUE, wins INTEGER NOT NULL, losses INTEGER NOT NULL)',
     );
+
+    this.database.exec(`
+      CREATE TABLE IF NOT EXISTS credentials (
+        user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        password TEXT
+      );
+      CREATE TABLE IF NOT EXISTS sessions (
+        token_hash TEXT PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        expires_at INTEGER NOT NULL
+      );
+    `);
 
     // decks table, columsn: id (does not auto increment - pivot on users->id), decks1 ,2 ,3 which will be card ids JSON.stringify-ied
     this.database.exec(
@@ -56,63 +72,101 @@ export default class DB {
   }
 
   isValidPassword(password) {
-    // needs more?
-    return password.length > 0;
+    return typeof password === 'string' && password.length >= 8 && password.length <= 128;
   }
 
   isValidUsername(username) {
-    // needs more?
-    return username.length > 0;
+    return typeof username === 'string' && /^[A-Za-z0-9_]{3,24}$/.test(username);
   }
 
   usernameExists(username) {
     const ret = this.database
-      .prepare('SELECT COUNT * as count FROM users WHERE username=?')
+      .prepare('SELECT COUNT(*) as count FROM users WHERE username=?')
       .get(username); // returns object {count: <int> }
     return Boolean(ret.count);
   }
 
   validateLogin(username, password) {
-    if (!username || !password) {
+    if (!this.isValidUsername(username) || typeof password !== 'string' || password.length > 128) {
       // then one of username or password is null / undefined
       return false;
     }
 
     const ret = this.database
-      .prepare('SELECT * FROM users WHERE username=?')
+      .prepare('SELECT users.*, credentials.password FROM users JOIN credentials ON user_id = users.id WHERE username=?')
       .get(username);
 
-    if (!ret) {
-      // then username not in db
+    if (!ret || ret.password !== password) {
       return false;
     }
 
-    const { id, userpassword, wins, losses } = ret;
-
-    if (password !== userpassword) {
-      return false;
-    }
-
-    return new User(id, username, wins, losses);
+    return new User(ret.id, ret.username, ret.wins, ret.losses);
   }
 
   insertNewUser(username, password) {
-    if (isValidUsername(username) && isValidPassword(password)) {
-      if (usernameExists(username)) {
+    if (this.isValidUsername(username) && this.isValidPassword(password)) {
+      if (this.usernameExists(username)) {
         return false;
       }
 
-      const res = this.database
+      this.database.exec('BEGIN');
+      try {
+        const res = this.database
         .prepare(
-          'INSERT INTO users (username, password, wins, losses) VALUES (?, ?, 0, 0)',
+          'INSERT INTO users (username, wins, losses) VALUES (?, 0, 0)',
         )
-        .run(username, password);
-      return res.changes === 0
-        ? false
-        : new User(res.lastInsertRowid, username, 0, 0);
+        .run(username);
+        this.database.prepare('INSERT INTO credentials (user_id, password) VALUES (?, ?)')
+          .run(res.lastInsertRowid, password);
+        this.database.exec('COMMIT');
+        return new User(res.lastInsertRowid, username, 0, 0);
+      } catch (error) {
+        this.database.exec('ROLLBACK');
+        throw error;
+      }
     }
 
     return false;
+  }
+
+  resetPassword(username, password) {
+    if (!this.isValidUsername(username) || !this.isValidPassword(password)) return false;
+    const user = this.database.prepare('SELECT id FROM users WHERE username = ?').get(username);
+    if (!user) return false;
+    this.database.exec('BEGIN');
+    try {
+      const result = this.database.prepare('UPDATE credentials SET password = ? WHERE user_id = ?')
+        .run(password, user.id);
+      if (result.changes !== 1) {
+        this.database.exec('ROLLBACK');
+        return false;
+      }
+      this.database.prepare('DELETE FROM sessions WHERE user_id = ?').run(user.id);
+      this.database.exec('COMMIT');
+      return true;
+    } catch (error) {
+      this.database.exec('ROLLBACK');
+      throw error;
+    }
+  }
+
+  createSession(user) {
+    this.database.prepare('DELETE FROM sessions WHERE expires_at <= ?').run(Date.now());
+    const token = randomBytes(32).toString('hex');
+    this.database.prepare('INSERT INTO sessions VALUES (?, ?, ?)')
+      .run(hashToken(token), user.id, Date.now() + 24 * 60 * 60 * 1000);
+    return token;
+  }
+
+  getSessionUser(token) {
+    if (typeof token !== 'string' || !/^[a-f0-9]{64}$/.test(token)) return null;
+    const user = this.database.prepare(`SELECT users.* FROM users JOIN sessions ON users.id = sessions.user_id
+      WHERE token_hash = ? AND expires_at > ?`).get(hashToken(token), Date.now());
+    return user ? new User(user.id, user.username, user.wins, user.losses) : null;
+  }
+
+  deleteSession(token) {
+    if (typeof token === 'string') this.database.prepare('DELETE FROM sessions WHERE token_hash = ?').run(hashToken(token));
   }
 
   updateDeck(user, deckIndex, deck) {
@@ -153,7 +207,7 @@ export default class DB {
     // user is a User instance
     const { id, username } = user;
 
-    if (usernameExists(username)) {
+    if (this.usernameExists(username)) {
       const ret = this.database
         .prepare('SELECT deck1, deck2, deck3 FROM decks WHERE id = ?')
         .get(id);
