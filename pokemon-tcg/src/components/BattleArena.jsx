@@ -2,6 +2,7 @@ import CardContainer from "./CardContainer";
 import ScrollableCardContainer from "./ScrollableCardContainer";
 import BattleHistory from "./BattleHistory";
 import BattleActionsPanel from "./BattleActionsPanel";
+import MatchMaking from "./MatchMaking.jsx";
 import { useLoaderData } from 'react-router-dom';
 import { useState, useCallback, useRef, useEffect } from 'react'
 import CARD_ANIMATIONS from '../animations/cardAnimations.js'
@@ -14,6 +15,7 @@ export default function BattleArena() {
   const {opponentBench:_opponentBench = [], opponentActive:_opponentActive = [], selfActive:_selfActive = [], selfBench:_selfBench = [], selfDeck:_selfDeck = []} = data ?? {};
 
   const cardRefs = useRef(new Map());
+  const [matchMakingStatus, setMatchMakingStatus] = useState('searching');
   const [isAnimating, setIsAnimating] = useState(false);
   const [selected, setSelected] = useState(null);
   const [opponentBench, setOpponentBench] = useState(_opponentBench);
@@ -23,6 +25,7 @@ export default function BattleArena() {
   const [selfDeck, setSelfDeck] = useState(_selfDeck);
   const [history, setHistory] = useState([]);
   const [battleActions, setBattleActions] = useState([]);
+  const [battleAbility, setBattleAbility] = useState({});
 
   useEffect(() => {
     socket.emit(socketEvents.helloWorld, 'what up');
@@ -41,6 +44,7 @@ export default function BattleArena() {
     setSelected(card);
   }, []);
   const onBenchClickHandler = useCallback((card) => {
+    // const actionData = card.abilities ? [...card.attacks, card.abilities] : card.attacks;
     setBattleActions(card.attacks);
     setSelected(card);
   }, []);
@@ -84,6 +88,10 @@ export default function BattleArena() {
     setIsAnimating(false);
   }, [selected, isAnimating]);
 
+  const cancelSearchHandler = () => {
+    setMatchMakingStatus("battle");
+  }
+
   if (error) {
     return (
       <>
@@ -93,25 +101,31 @@ export default function BattleArena() {
     );
   }
 
-  return (
-    <div className="battleArena">
-      
-      <CardContainer cards={opponentBench} selectedCardId={selected?.id} id="opponentBench"/>
-    
-      <BattleHistory history={history} />
-      
-      <section id="centerStage">
+  if (matchMakingStatus === 'searching') {
+    return <MatchMaking onClickHandler={cancelSearchHandler}/>
+  }
+
+  if (matchMakingStatus === 'battle') {
+    return (
+      <div className="battleArena">
         
-        <CardContainer cards={opponentActive} selectedCardId={selected?.id} registerCardRef={registerCardRef} id="opponentActive"/>
-        <img id="arenaIcon" src="battle-arena.jpg"/>
-        <CardContainer cards={selfActive} selectedCardId={selected?.id} registerCardRef={registerCardRef} id="selfActive" onCardClick={onActiveClickHandler}/>
+        <CardContainer cards={opponentBench} selectedCardId={selected?.id} id="opponentBench"/>
+      
+        <BattleHistory history={history} />
         
-      </section>
-      
-      <BattleActionsPanel attacks={battleActions} onClick={onAttackClickHandler}/>
-      
-      <CardContainer cards={selfBench} id="selfBench" selectedCardId={selected?.id} registerCardRef={registerCardRef} onCardClick={onBenchClickHandler}/>
-      <ScrollableCardContainer cards={selfDeck} selectedCardId={selected?.id} id="selfDeck" visibleCount={8} onCardClick={onDeckClickHandler}/>
-    </div>
-  )
+        <section id="centerStage">
+          
+          <CardContainer cards={opponentActive} selectedCardId={selected?.id} registerCardRef={registerCardRef} id="opponentActive"/>
+          <img id="arenaIcon" src="battle-arena.jpg"/>
+          <CardContainer cards={selfActive} selectedCardId={selected?.id} registerCardRef={registerCardRef} id="selfActive" onCardClick={onActiveClickHandler}/>
+          
+        </section>
+        
+        <BattleActionsPanel attacks={battleActions} onClick={onAttackClickHandler}/>
+        
+        <CardContainer cards={selfBench} id="selfBench" selectedCardId={selected?.id} registerCardRef={registerCardRef} onCardClick={onBenchClickHandler}/>
+        <ScrollableCardContainer cards={selfDeck} selectedCardId={selected?.id} id="selfDeck" visibleCount={8} onCardClick={onDeckClickHandler}/>
+      </div>
+    )
+  }
 }
