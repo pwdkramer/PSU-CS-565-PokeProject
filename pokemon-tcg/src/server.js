@@ -1,6 +1,10 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import http from 'http';
+import { Server } from 'socket.io';
+import socketEvents from './websocket/socketEvents.js';
+import { randomUUID } from 'crypto';
 import database, { User, Decks } from './database/poke-tcg-db.js';
 
 // footer reference: <a target="_blank" href="https://icons8.com/icon/8gTxcIoC22Bp/pokemonball">Pokemonball</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
@@ -11,6 +15,8 @@ import database, { User, Decks } from './database/poke-tcg-db.js';
 // turns our ES6 does not natively support __dirname so:
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 const port = process.env.PORT || 5001;
 
 const Endpoint = 'https://api.tcgdex.net/v2/en';
@@ -164,6 +170,15 @@ app.use((req, res) => {
   res.sendFile(path.join(__dirname, '..', 'dist', 'index.html'));
 });
 
-app.listen(port, () => {
+io.on('connection', (socket) => {
+  console.log(`${socket.id}`);
+
+  socket.on(socketEvents.helloWorld, (msg) => {
+    console.log('hello world received');
+    console.log(msg);
+  });
+});
+
+server.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });

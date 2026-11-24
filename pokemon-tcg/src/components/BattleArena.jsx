@@ -3,8 +3,10 @@ import ScrollableCardContainer from "./ScrollableCardContainer";
 import BattleHistory from "./BattleHistory";
 import BattleActionsPanel from "./BattleActionsPanel";
 import { useLoaderData } from 'react-router-dom';
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import CARD_ANIMATIONS from '../animations/cardAnimations.js'
+import socket from "../websocket/socket.js";
+import socketEvents from "../websocket/socketEvents.js";
 
 export default function BattleArena() {
   const { data, error } = useLoaderData();
@@ -21,6 +23,10 @@ export default function BattleArena() {
   const [selfDeck, setSelfDeck] = useState(_selfDeck);
   const [history, setHistory] = useState([]);
   const [battleActions, setBattleActions] = useState([]);
+
+  useEffect(() => {
+    socket.emit(socketEvents.helloWorld, 'what up');
+  }, [])
 
   const registerCardRef = useCallback((id, node) => {
     if (node) {
