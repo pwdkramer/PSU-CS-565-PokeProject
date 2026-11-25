@@ -1,5 +1,5 @@
 export const statusEffects = Object.freeze({
-  sleep: 'sleep',
+  sleep: 'sleep', 
   paralyze: 'paralyze',
   confused: 'confused',
   poison: 'poison',

@@ -6,6 +6,7 @@ import { Server } from 'socket.io';
 import socketEvents from './websocket/socketEvents.js';
 import { randomUUID } from 'crypto';
 import database, { User, Decks } from './database/poke-tcg-db.js';
+import shuffle from './helpers/shuffle.js';
 
 // footer reference: <a target="_blank" href="https://icons8.com/icon/8gTxcIoC22Bp/pokemonball">Pokemonball</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
 // <a target="_blank" href="https://icons8.com/icon/45657/up-arrow">Up Arrow</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
@@ -24,22 +25,6 @@ const Endpoint = 'https://api.tcgdex.net/v2/en';
 // cached http response data:
 let SET = null;
 let CARDS = null;
-
-// https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
-const shuffle = async function fisherYatersShuffleAlg(cardsArray) {
-  // bc of the indice swapping, I left this as a standard for loop rather than array method
-  const out = [...cardsArray];
-  const count = out.length;
-
-  for (let i = count - 1; i > 0; --i) {
-    const rand = Math.floor(Math.random() * (i + 1));
-    const temp = out[rand];
-    out[rand] = out[i];
-    out[i] = temp;
-  }
-
-  return out;
-};
 
 const getSet = async function getSetDataOnly() {
   if (SET) {
@@ -143,18 +128,18 @@ app.get('/api/battle', async (req, res) => {
   try {
     const cards = await getCards();
 
-    const shuffled = await shuffle(cards);
+    // const [shuffleCount, shuffled] = await shuffle(cards, true);
 
-    const payload = {
+    /*const payload = {
       opponentBench: shuffled.slice(0, 5),
       opponentActive: shuffled.slice(5, 6),
       selfActive: shuffled.slice(6, 7),
       selfBench: shuffled.slice(7, 12),
       selfDeck: shuffled.slice(12, 65),
-    };
+    };*/
 
     return res.status(200).json({
-      payload: payload,
+      payload: cards.slice(0, 60),
     });
   } catch (error) {
     return res.status(500).json({

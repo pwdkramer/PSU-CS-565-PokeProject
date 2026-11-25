@@ -236,7 +236,7 @@
     'historyPan oppBench activePan'
     'historyPan centerStage activePan'
     'historyPan selfBench activePan'
-    'selfDeck selfDeck selfDeck';
+    'selfHand selfHand selfHand';
 }
 
 #centerStage {
@@ -267,8 +267,8 @@
 #selfBench {
   grid-area: selfBench;
 }
-#selfDeck {
-  grid-area: selfDeck;
+#selfHand {
+  grid-area: selfHand;
 }
 #opponentActive,
 #selfActive {
@@ -458,6 +458,15 @@
   overflow-wrap: anywhere;
 }
 
+.openCardSlot {
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.openCardSlot.isDraggedOver {
+  border: 4px solid var(--accent);
+}
 /* ===== End Battle Arena Specific */
 
 /* Match Making Wait Screen UI */

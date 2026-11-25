@@ -94,6 +94,13 @@ export class RawPokemonCard extends BaseCard {
     this.setupAbilities();
   }
 
+  get stage() {
+    // returns a string to mimick the raw card json
+    // use getStage() method for integer representation
+    const intStage = this.evolveFrom.stage;
+    return intStage === 0 ? 'Basic' : `stage${intStage}`;
+  }
+
   setupAttacks() {
     // rawAttacks from http get is array of objects, one object for each attack
     const parsedAttacks = ATTACK_EFFECTS[this.id] ?? {};

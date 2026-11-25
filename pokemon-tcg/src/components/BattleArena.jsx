@@ -1,4 +1,4 @@
-import CardContainer from "./CardContainer";
+import CardContainer, { getPlaceholder } from "./CardContainer";
 import ScrollableCardContainer from "./ScrollableCardContainer";
 import BattleHistory from "./BattleHistory";
 import BattleActionsPanel from "./BattleActionsPanel";
@@ -12,17 +12,22 @@ import socketEvents from "../websocket/socketEvents.js";
 export default function BattleArena() {
   const { data, error } = useLoaderData();
 
-  const {opponentBench:_opponentBench = [], opponentActive:_opponentActive = [], selfActive:_selfActive = [], selfBench:_selfBench = [], selfDeck:_selfDeck = []} = data ?? {};
+  // const {shuffleCount = 1, deck = []} = data ?? {};
+  const deck = data;
 
   const cardRefs = useRef(new Map());
+
+  console.log(deck);
+  console.log(deck.slice(0,7));
   const [matchMakingStatus, setMatchMakingStatus] = useState('searching');
   const [isAnimating, setIsAnimating] = useState(false);
   const [selected, setSelected] = useState(null);
-  const [opponentBench, setOpponentBench] = useState(_opponentBench);
-  const [opponentActive, setOpponentActive] = useState(_opponentActive);
-  const [selfActive, setSelfActive] = useState(_selfActive);
-  const [selfBench, setSelfBench] = useState(_selfBench);
-  const [selfDeck, setSelfDeck] = useState(_selfDeck);
+  const [opponentBench, setOpponentBench] = useState(getPlaceholder(5));
+  const [opponentActive, setOpponentActive] = useState(getPlaceholder(1));
+  const [selfActive, setSelfActive] = useState(getPlaceholder(1));
+  const [selfBench, setSelfBench] = useState(getPlaceholder(5));
+  const [selfHand, setSelfHand] = useState(deck.slice(0,7));
+  const [selfDeck, setSelfDeck] = useState(deck.slice(7));
   const [history, setHistory] = useState([]);
   const [battleActions, setBattleActions] = useState([]);
   const [battleAbility, setBattleAbility] = useState({});
@@ -114,17 +119,16 @@ export default function BattleArena() {
         <BattleHistory history={history} />
         
         <section id="centerStage">
-          
           <CardContainer cards={opponentActive} selectedCardId={selected?.id} registerCardRef={registerCardRef} id="opponentActive"/>
           <img id="arenaIcon" src="battle-arena.jpg"/>
-          <CardContainer cards={selfActive} selectedCardId={selected?.id} registerCardRef={registerCardRef} id="selfActive" onCardClick={onActiveClickHandler}/>
+          <CardContainer cards={selfActive} selectedCardId={selected?.id} registerCardRef={registerCardRef} id="selfActive" canDrop={true} onCardClick={onActiveClickHandler}/>
           
         </section>
         
         <BattleActionsPanel attacks={battleActions} onClick={onAttackClickHandler}/>
-        
-        <CardContainer cards={selfBench} id="selfBench" selectedCardId={selected?.id} registerCardRef={registerCardRef} onCardClick={onBenchClickHandler}/>
-        <ScrollableCardContainer cards={selfDeck} selectedCardId={selected?.id} id="selfDeck" visibleCount={8} onCardClick={onDeckClickHandler}/>
+
+        <CardContainer cards={selfBench} id="selfBench" selectedCardId={selected?.id} registerCardRef={registerCardRef} draggable={true} canDrop={true} onCardClick={onBenchClickHandler}/>
+        <ScrollableCardContainer cards={selfHand} selectedCardId={selected?.id} id="selfHand" visibleCount={8} draggable={true} onCardClick={onDeckClickHandler}/>
       </div>
     )
   }

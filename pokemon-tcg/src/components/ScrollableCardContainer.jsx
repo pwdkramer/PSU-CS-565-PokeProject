@@ -14,6 +14,7 @@ export default memo(function ScrollableCardContainer({
   selectedCardId,
   registerCardRef,
   onCardClick,
+  draggable,
 }) {
   const [scrollIndex, setScrollIndex] = useState(0); // indexes the card to be shown on the far left
   
@@ -41,6 +42,7 @@ export default memo(function ScrollableCardContainer({
         selected={selectedCardId === id}
         onCardClick={onCardClick}
         registerCardRef={registerCardRef}
+        draggable={draggable}
       />
       <button 
         type="button" 

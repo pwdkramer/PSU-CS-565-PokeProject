@@ -5,6 +5,7 @@ import Cardview from './components/Cardview';
 import Deckbuild from './components/Deckbuild';
 import BattleArena from './components/BattleArena';
 import { buildRawCard } from './types/rawCard.js'
+import shuffle from './helpers/shuffle.js';
 import ErrorPage from './components/ErrorPage.jsx';
 import './App.css';
 
@@ -23,17 +24,12 @@ const getEndpoint = (dataType) => {
   }
 };
 
-const parseData = function parseAnyRawHttpData(dataType, data) {
+const parseData = async function parseAnyRawHttpData(dataType, data) {
   if (dataType === 'battleArena') {
-    const ret = {};
-    Object.entries(data).forEach(([key, cards]) => {
-      console.log(key, cards);
-      ret[key] = cards.map((card) => {
-        return buildRawCard(card);
-      })
-    })
 
-    return ret;
+    const [shuffleCount, shuffled] = await shuffle(data, true);
+
+    return shuffled;
   }
 
   return data;
@@ -53,9 +49,9 @@ const fetchCards = async function fetchCards(dataType) {
         error: rawdata.payload,
       };
     }
-
-    const data = parseData(dataType, rawdata.payload);
-
+    
+    const data = await parseData(dataType, rawdata.payload);
+    
     return {
       data: data,
       error: null,
