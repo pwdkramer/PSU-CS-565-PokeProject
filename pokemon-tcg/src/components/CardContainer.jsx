@@ -8,10 +8,10 @@ import { memo } from 'react';
 */
 
 // generate a empty id, image, name object for use in CardContainer.jsx
-export const getPlaceholder = function generatePlaceholderCard(count) {
+export const getPlaceholder = function generatePlaceholderCard(count, idPrefix='') {
   const cards = Array.from({ length: count}, (_, i) => {
     return { 
-      id: `placerhoder${i}`, 
+      id: `${idPrefix}${i}`, 
       image: null, 
       name: null 
     };
@@ -20,7 +20,7 @@ export const getPlaceholder = function generatePlaceholderCard(count) {
   return cards;
 }
 
-export default memo(function CardContainer({ cards, id, onCardClick, actionLabel, selectedCardId, registerCardRef, classNames = [], draggable=false, canDrop=false }) {
+export default memo(function CardContainer({ cards, id, onCardClick, actionLabel, selectedCardId, registerCardRef, classNames = [], draggable=false, canDrop=false, onCardDrop }) {
   const classes = ['cardContainer', ...classNames].join(' ');
   
   return (
@@ -40,11 +40,12 @@ export default memo(function CardContainer({ cards, id, onCardClick, actionLabel
               actionLabel={actionLabel}
               draggable={draggable}
               canDrop={canDrop}
+              onCardDrop={onCardDrop}
             />);
         }
         
         return (
-          <CardSlot id={id} canDrop={canDrop}/>
+          <CardSlot id={id} canDrop={canDrop} onCardDrop={onCardDrop}/>
         )}
       })}
     </ul>

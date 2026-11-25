@@ -462,10 +462,20 @@
   height: 100%;
   width: 100%;
   box-sizing: border-box;
+  background-color: transparent;
 }
 
 .openCardSlot.isDraggedOver {
   border: 4px solid var(--accent);
+}
+
+.cardWrapper.cardSlot {
+  background-color: var(--social-bg);
+  border: 1px solid var(--accent-border);
+}
+
+.cardWrapper.cardSlot:hover {
+  transform: none; /* override the zoom/expand behavior for empty slots */
 }
 /* ===== End Battle Arena Specific */
 

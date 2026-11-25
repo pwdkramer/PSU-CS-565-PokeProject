@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 export default function CardSlot({ id, onCardDrop, canDrop = false}) {
   const [isDragOver, setDragOver] = useState(false);
+  const myId = id;
   
   const handleDragOver = (e) => {
     if (canDrop) {
@@ -23,12 +24,10 @@ export default function CardSlot({ id, onCardDrop, canDrop = false}) {
   const handleDrop = (e) => {
     e.preventDefault();
     setDragOver(false);
-    console.log('droped');
     if (canDrop) {
-      const id = e.dataTransfer.getData('text/plain');
-      console.log(id);
+      const id = e.dataTransfer.getData('text/plain');  
       if (id && onCardDrop) {
-        onCardDrop(id); // call the drop action function if exists
+        onCardDrop(id, myId); // call the drop action function if exists
       }
     }
   };
@@ -37,8 +36,8 @@ export default function CardSlot({ id, onCardDrop, canDrop = false}) {
 
   return (
     <li 
-      key={id ?? 'placeholder'} 
-      className={"cardWrapper"}
+      key={myId} 
+      className={"cardWrapper cardSlot"}
     >
       <div 
         className={classname}

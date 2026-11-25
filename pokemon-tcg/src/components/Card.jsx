@@ -1,4 +1,6 @@
-export default function Card({ id, image, name, highres, selected, onClick,  registerCardRef, buttonLabel, draggable=false, onDragStart, onDragEnd, canDrop=false }) {
+export default function Card({ id, image, name, highres, selected, onClick,  registerCardRef, buttonLabel, draggable=false, onDragStart, onDragEnd, canDrop=false, onCardDrop }) {
+  // onCardDrop used for evolve
+  
   const cardImage = (    
     <img
       className="cardImage"
