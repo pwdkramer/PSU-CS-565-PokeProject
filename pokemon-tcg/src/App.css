@@ -278,7 +278,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 
   &::before,
   &::after {
-    content: '';
+    content: "";
     position: absolute;
     top: -4.5px;
     border: 5px solid transparent;
@@ -325,4 +325,61 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   height: 100%;
   display: block;
   object-fit: fill;
+}
+
+.deck-builder-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.deck-builder-panel {
+  padding: 1rem;
+}
+
+.deck-builder-results {
+  border: 1px solid #8888;
+  border-radius: 0.5rem;
+  min-height: 8rem;
+  max-height: 55vh;
+  overflow-y: auto;
+  margin-top: 1rem;
+}
+
+.deck-builder-results .cardContainer {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.deck-builder-contents {
+  border: 1px solid #8888;
+  border-radius: 0.5rem;
+  min-height: 8rem;
+  max-height: 55vh;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.deck-builder-contents .cardContainer {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.card-button {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.card-button:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: -3px;
+}
+
+@media (max-width: 700px) {
+  .deck-builder-layout {
+    grid-template-columns: 1fr;
+  }
 }

@@ -78,7 +78,7 @@ const router = createBrowserRouter([
       {
         path: 'deckbuild',
         Component: Deckbuild,
-        loader: async () => { await requireUser(); return fetchCards('deckbuild'); },
+        loader: async () => { await requireUser(); return fetchCards('cardimgs'); },
         // this is supposed to render during loading events.
         // See https://reactrouter.com/start/framework/route-module#hydratefallback
         HydrateFallback: () => {
