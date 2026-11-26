@@ -320,6 +320,24 @@
   cursor: pointer;
 }
 
+#endTurnButton {
+  cursor: pointer;
+  height: 25%;
+  width: 10%;
+  padding: 6px;
+  background-color: var(--social-bg);
+  border: 1px solid var(--accent-border);
+  border-radius: 4px;
+  box-sizing: border-box;
+  z-index: 10;
+  color: var(--text);
+  font-weight: bold;
+  font-size: 100%;
+}
+#endTurnButton:hover {
+  border: 4px solid var(--accent);
+}
+
 .battleArena .cardWrapper {
   height: var(--card-h);
 }
@@ -482,10 +500,9 @@
 /* Match Making Wait Screen UI */
 
 .matchMakingWrapper {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  display: grid;
+  place-items: center;
+  height: 100dvh;
 }
 
 .matchQueueTimer {

@@ -1,20 +1,46 @@
-export default class GameContext {
-  game = null; // GameEngine
-  player = null; // ('./player.js').Player
-  opponent = null; // ('./player.js').Player
-
+export class PlayerContext {
   attacker = null;
-  defender = null;
-  selected = null;
+  hp = 100;
+  bench = [];  
 
-  constructor({ game, player, opponnet, selected }) {
-    this.game = game;
-    this.player = player;
-    this.opponent = this.opponent;
+  constructor(attacker, hp, bench) {
+    this.attacker = attacker?? null;
+    this.hp = hp?? 100;
+    this.bench = bench?? [];
+  }
+}
 
-    this.attacker = player.getActiveCard(); // active attacking card
-    this.defender = opponnet.getActiveCard(); // active defending card
+// used by server!
+export class GameContext {
+  turn = 0;
+  gameState = 'active';
+  
+  member1Name = '';
+  member2Name = '';
 
-    this.selected = this.selected; // the currently selected card
+  member1Data = new PlayerContext;
+  member2Data = new PlayerContext;
+  
+  areCardsVisible = false;
+
+  constructor(
+    turn,
+    gameState,
+    member1Name,
+    member2Name,
+    member1Data,
+    member2Data,
+  ) 
+  {
+    this.turn = turn?? 0;
+    this.gameState = gameState;
+
+    this.member1Name = member1Name?? '';
+    this.member2Name = member2Name?? '';
+
+    this.member1Data = member1Data?? new PlayerContext();
+    this.member2Data = member2Data?? new PlayerContext();
+
+    this.areCardsVisible = turn > 1; // cards hidden until turn 2, each half turn is a single turn
   }
 }

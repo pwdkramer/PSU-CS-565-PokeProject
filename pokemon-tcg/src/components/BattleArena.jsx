@@ -8,10 +8,8 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import CARD_ANIMATIONS from '../animations/cardAnimations.js'
 import socket from "../websocket/socket.js";
 import socketEvents from "../websocket/socketEvents.js";
+import { PlayerContext } from "../types/gameContext.js";
 
-const cardReplace = (cardIn, cardOut) => {
-
-}
 
 export default function BattleArena() {
   const { data, error } = useLoaderData();
@@ -20,6 +18,7 @@ export default function BattleArena() {
   const deck = data;
 
   const cardRefs = useRef(new Map());
+  const playerContext = useRef(new PlayerContext());
 
   const [matchMakingStatus, setMatchMakingStatus] = useState('searching');
   const [isAnimating, setIsAnimating] = useState(false);
@@ -35,7 +34,8 @@ export default function BattleArena() {
   const [battleAbility, setBattleAbility] = useState({});
 
   useEffect(() => {
-    socket.emit(socketEvents.helloWorld, 'what up');
+    socket.emit(socketEvents.matchMakeRequest);
+    socket.on(socketEvents.battleStart, () => setMatchMakingStatus("battle"));
   }, [])
 
   const registerCardRef = useCallback((id, node) => {
@@ -46,7 +46,6 @@ export default function BattleArena() {
     }
   }, []);
   const onActiveClickHandler = useCallback((card) => {
-    console.log('in');
     setBattleActions(card.attacks);
     setSelected(card);
   }, []);
@@ -55,13 +54,12 @@ export default function BattleArena() {
     setBattleActions(card.attacks);
     setSelected(card);
   }, []);
-  const onDeckClickHandler = useCallback((card) => {
-    console.log("deck", card);
-  }, []);
   const onAttackClickHandler = useCallback(async (attack) => {
-    console.log("attack", attack);
-    console.log(selected);
     if (isAnimating || !selected) {
+      return;
+    }
+    console.log(selected, selfActive);
+    if (selected.id !== selfActive[0].id) {
       return;
     }
 
@@ -103,6 +101,8 @@ export default function BattleArena() {
     const replacedActive = selfActive.find((card) => card.id === replacedId);
     const replacedBench = selfBench.find((card) => card.id === replacedId);
 
+    let currentBench = selfBench;
+
     if (hand) {
       // hand gets smaller
       if (hand === replacedHand) {
@@ -134,27 +134,35 @@ export default function BattleArena() {
         const movingIndex = prev.indexOf(bench);
         const temp = getPlaceholder(1, 'selfBench')[0];
         temp.id = `selfBench${movingIndex}`
+        currentBench = prev.with(movingIndex, temp);
         return prev.with(movingIndex, temp);
         });
     } else {
       return;
     }
-    console.log(selfBench);
+
     if (replacedId.startsWith('selfBench')) {
       const replacedIndex = Number(replacedId.replace('selfBench', ''));
-      const newBench = selfBench.with(replacedIndex, hand ?? bench ?? active)
+      const newBench = currentBench.with(replacedIndex, hand ?? bench ?? active)
       setSelfBench(newBench);
       console.log(selfBench);
-    }
-    else if (replacedId.startsWith('selfActive')) {
+    } else if (replacedId.startsWith('selfActive')) {
       const replacedIndex = Number(replacedId.replace('selfActive', ''));
       const newActive = selfActive.with(replacedIndex, hand ?? bench ?? active)
       setSelfActive(newActive);
     }
-  }, [selfHand, selfBench, selfActive]);
 
+    setSelected(null);
+
+    playerContext.current = new PlayerContext(selfActive[0], null, selfBench);
+    socket.emit(socketEvents.battleUpdate, playerContext.current);
+  }, [selfHand, selfBench, selfActive, selected]);
+  const endTurnClickHandler = () => {
+    console.log("turn end clicked");
+  }
   const cancelSearchHandler = () => {
-    setMatchMakingStatus("battle");
+    socket.emit(socketEvents.matchMakeCancel);
+    setMatchMakingStatus("battle"); // TEMPORARY!
   }
 
   if (error) {
@@ -181,14 +189,15 @@ export default function BattleArena() {
         <section id="centerStage">
           <CardContainer cards={opponentActive} selectedCardId={selected?.id} registerCardRef={registerCardRef} id="opponentActive"/>
           <img id="arenaIcon" src="battle-arena.jpg"/>
+          <button type="button" id="endTurnButton" onClick={endTurnClickHandler}>End Turn</button>
           <CardContainer cards={selfActive} selectedCardId={selected?.id} registerCardRef={registerCardRef} id="selfActive" draggable={true} canDrop={true} onCardClick={onActiveClickHandler} onCardDrop={onCardDrop}/>
           
         </section>
         
-        <BattleActionsPanel attacks={battleActions} onClick={onAttackClickHandler}/>
+        <BattleActionsPanel attacks={battleActions} selectedCard={selected} onClick={onAttackClickHandler}/>
 
         <CardContainer cards={selfBench} id="selfBench" selectedCardId={selected?.id} registerCardRef={registerCardRef} draggable={true} canDrop={true} onCardClick={onBenchClickHandler} onCardDrop={onCardDrop}/>
-        <ScrollableCardContainer cards={selfHand} selectedCardId={selected?.id} id="selfHand" visibleCount={8} draggable={true} onCardClick={onDeckClickHandler}/>
+        <ScrollableCardContainer cards={selfHand} selectedCardId={selected?.id} id="selfHand" visibleCount={8} draggable={true}/>
       </div>
     )
   }

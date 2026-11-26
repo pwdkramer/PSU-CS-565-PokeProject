@@ -15,11 +15,13 @@ export default function MatchMaking({onClickHandler}) {
 
   return (
     <div className="matchMakingWrapper">
-      <h3>Searching For Opponent</h3>
-      <p className="matchQueueTimer">{`${seconds}`}</p>
-      <button type="button" className="matchCancelButton" onClick={onClickHandler}>
-        Cancel Match
+      <div className="matchMakingDetails">
+        <h3>Searching For Opponent</h3>
+        <p className="matchQueueTimer">{`${seconds}`}</p>
+        <button type="button" className="matchCancelButton" onClick={onClickHandler}>
+          Cancel Match
       </button>
+      </div>
     </div>
   )
 }

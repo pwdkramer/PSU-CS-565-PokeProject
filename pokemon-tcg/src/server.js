@@ -7,6 +7,8 @@ import socketEvents from './websocket/socketEvents.js';
 import { randomUUID } from 'crypto';
 import database, { User, Decks } from './database/poke-tcg-db.js';
 import shuffle from './helpers/shuffle.js';
+import { disconnect } from 'cluster';
+import { GameContext } from './types/gameContext.js';
 
 // footer reference: <a target="_blank" href="https://icons8.com/icon/8gTxcIoC22Bp/pokemonball">Pokemonball</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
 // <a target="_blank" href="https://icons8.com/icon/45657/up-arrow">Up Arrow</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
@@ -25,6 +27,8 @@ const Endpoint = 'https://api.tcgdex.net/v2/en';
 // cached http response data:
 let SET = null;
 let CARDS = null;
+const ACTIVEBATTLES = new Map();
+const WAITINGROOM = 'waiting room';
 
 const getSet = async function getSetDataOnly() {
   if (SET) {
@@ -155,13 +159,64 @@ app.use((req, res) => {
   res.sendFile(path.join(__dirname, '..', 'dist', 'index.html'));
 });
 
+const getRoomMembers = async function returnAllSocketsInTheGivenRoom(roomName) {
+  const sockets = await io.in(roomName).fetchSockets();
+
+  //sockets.forEach((socket) => {
+  //  console.log(socket, socket.id, socket.data);
+  //})
+
+  return sockets;
+}
+
 io.on('connection', (socket) => {
   console.log(`${socket.id}`);
 
+  socket.on('disconnect', () => {
+    console.log(`${socket.id} disconnect`);
+    socket.rooms.forEach((roomName) => socket.leave(roomName));
+  })
   socket.on(socketEvents.helloWorld, (msg) => {
     console.log('hello world received');
     console.log(msg);
   });
+  socket.on(socketEvents.matchMakeRequest, async () => {
+    const members = await getRoomMembers(WAITINGROOM);
+    console.log(members.length);
+    if (members.length > 0) {
+      const [_shuffleCount, shuffled] = await shuffle(members);
+      const opponent = shuffled[0];
+
+      socket.leave(WAITINGROOM);
+      opponent.leave(WAITINGROOM);
+
+      const battleId = randomUUID();
+      const battleDetails = {
+        startTime: new Date(),
+        member1: socket,
+        member2: opponent,
+        turn: 0,
+        gameContext: new GameContext(),
+      };
+      
+      ACTIVEBATTLES.set(battleId, battleDetails);
+
+      socket.join(battleId);
+      opponent.join(battleId);
+
+      // broadcast to room
+      io.to(battleId).emit(socketEvents.battleStart);
+    } else {
+      socket.join(WAITINGROOM);
+    }
+  })
+  socket.on(socketEvents.matchMakeCancel, (ms) => {
+    socket.leave(WAITINGROOM);
+    const members = getRoomMembers();
+  })
+  socket.on(socketEvents.battleUpdate, (playerContext) => {
+    
+  })
 });
 
 server.listen(port, () => {
