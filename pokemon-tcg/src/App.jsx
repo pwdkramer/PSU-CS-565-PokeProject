@@ -4,13 +4,9 @@ import Homepage from './components/Homepage';
 import Cardview from './components/Cardview';
 import Deckbuild from './components/Deckbuild';
 import BattleArena from './components/BattleArena';
-import { buildRawCard } from './types/rawCard.js'
 import shuffle from './helpers/shuffle.js';
 import ErrorPage from './components/ErrorPage.jsx';
 import './App.css';
-
-
-
 
 // internal routes sent to server.js
 const getEndpoint = (dataType) => {
@@ -26,14 +22,13 @@ const getEndpoint = (dataType) => {
 
 const parseData = async function parseAnyRawHttpData(dataType, data) {
   if (dataType === 'battleArena') {
-
     const [shuffleCount, shuffled] = await shuffle(data, true);
 
     return shuffled;
   }
 
   return data;
-}
+};
 
 // main data loader. If an error occurs, then it sets the error attribute to
 // indicate to the react page, else set data attribute
@@ -42,16 +37,16 @@ const fetchCards = async function fetchCards(dataType) {
     const endpoint = getEndpoint(dataType);
     const response = await fetch(endpoint);
     const rawdata = await response.json();
-    
+
     if (!response.ok) {
       return {
         data: null,
         error: rawdata.payload,
       };
     }
-    
+
     const data = await parseData(dataType, rawdata.payload);
-    
+
     return {
       data: data,
       error: null,

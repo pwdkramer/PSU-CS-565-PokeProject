@@ -4,6 +4,7 @@ const socketEvents = Object.freeze({
   matchMakeCancel: 'match make cancel',
   battleStart: 'batte start',
   battleUpdate: 'battle update',
+  contextUpdate: 'context updage',
 });
 
 export default socketEvents;

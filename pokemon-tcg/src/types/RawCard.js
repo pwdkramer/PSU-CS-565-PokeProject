@@ -3,6 +3,7 @@ import { ATTACK_EFFECTS } from './attacks.js';
 import { ABILITY_EFFECTS } from './abilities.js';
 import { TRAINER_EFFECTS } from './trainers.js';
 
+/* // Replaced to flatten the card objects for serialization 
 export class Identification {
   category = '';
   id = '';
@@ -26,7 +27,7 @@ export class EvolveFrom {
 
   constructor({ evolveFrom, evolveFromId, stage }) {
     this.name = evolveFrom ?? null;
-    this.id = evolveFrom ?? null;
+    this.id = evolveFromId ?? null;
     const lastCharNum = Number(stage?.[stage.length - 1]);
 
     if (stage === 'Basic') {
@@ -41,27 +42,27 @@ export class EvolveFrom {
   isEvolved() {
     return this.stage > 0;
   }
-}
+}*/
 
-// abstract base class
+// all card types share these identifiation attributes
 class BaseCard {
-  identification = null;
+  // identification
+  category = '';
+  id = '';
+  image = '';
+  localId = '';
+  rarity = '';
 
-  get id() {
-    return this.identification ? this.identification.id : null;
-  }
-
-  get image() {
-    return this.identification ? this.identification.imageLocation : null;
-  }
-
-  get category() {
-    return this.identification ? this.identification.category : null;
+  constructor(rawData) {
+    ({ category: this.category, id: this.id, image: this.image, localId: this.localId, rarity: this.rarity } = rawData);
   }
 }
 
-export class RawPokemonCard extends BaseCard {
-  evolveFrom = null;
+export class RawPokemonCard extends BaseCard{
+  // evolve from info
+  evolveFrom = '';
+  evolveFromId = '';
+  stage = 0;
 
   name = '';
   hp = 0;
@@ -75,17 +76,11 @@ export class RawPokemonCard extends BaseCard {
   statuses = [];
 
   constructor(rawData) {
-    super();
-    this.identification = new Identification(rawData);
-    this.evolveFrom = new EvolveFrom(rawData);
+    // only keep info we need
+    super(rawData);
 
-    const { name, hp, types, abilities, attacks, weaknesses } = rawData;
-    this.name = name;
-    this.hp = hp;
-    this.types = types;
-    this.abilities = abilities;
-    this.attacks = attacks;
-    this.weaknesses = weaknesses;
+    ({ evolveFrom: this.evolveFrom, evolveFromId: this.evolveFromId, stage: this.stage } = rawData);
+    ({ name: this.name, hp: this.hp, types: this.types, abilities: this.abilities, attacks:this.attacks , weaknesses:this.weaknesses } = rawData);
 
     this.attachedEnergy = []; // energy cards
     this.statuses = [];
@@ -97,7 +92,7 @@ export class RawPokemonCard extends BaseCard {
   get stage() {
     // returns a string to mimick the raw card json
     // use getStage() method for integer representation
-    const intStage = this.evolveFrom.stage;
+    const intStage = this.stage;
     return intStage === 0 ? 'Basic' : `stage${intStage}`;
   }
 
@@ -124,11 +119,11 @@ export class RawPokemonCard extends BaseCard {
   }
 
   isEvolved() {
-    return this.evolveFrom?.isEvolved() ?? false;
+    return this.stage > 0;
   }
 
   getStage() {
-    return this.evolveFrom?.stage ?? 0;
+    return this.stage ?? 0;
   }
 
   getAttachedEnergy() {
@@ -156,16 +151,17 @@ export class RawPokemonCard extends BaseCard {
   }
 }
 
-export class RawTrainerCard extends BaseCard {
+export class RawTrainerCard extends BaseCard{
   name = '';
   effect = '';
   canPlay = null;
   parsed = null;
 
   constructor(rawData) {
-    super();
-    this.identification = new Identification(rawData);
+    super(rawData);
+
     ({ name: this.name, effect: this.effect } = rawData);
+
     this.setupEffect();
   }
 
@@ -176,14 +172,6 @@ export class RawTrainerCard extends BaseCard {
     this.canPlay = canPlay;
     this.parsed = actions;
   }
-
-  get id() {
-    return this.identification ? this.identification.id : null;
-  }
-
-  get image() {
-    return this.identification ? this.identification.imageLocation : null;
-  }
 }
 
 export class RawEnergyCard extends BaseCard {
@@ -191,17 +179,9 @@ export class RawEnergyCard extends BaseCard {
   energyType = ''; // Base or Special (only base1-96)
 
   constructor(rawData) {
-    super();
-    this.identification = new Identification(rawData);
+    super(rawData);
+
     ({ name: this.name, energyType: this.energyType } = rawData);
-  }
-
-  get id() {
-    return this.identification ? this.identification.id : null;
-  }
-
-  get image() {
-    return this.identification ? this.identification.imageLocation : null;
   }
 }
 

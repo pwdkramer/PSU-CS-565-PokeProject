@@ -8,7 +8,7 @@ import { randomUUID } from 'crypto';
 import database, { User, Decks } from './database/poke-tcg-db.js';
 import shuffle from './helpers/shuffle.js';
 import { disconnect } from 'cluster';
-import { GameContext } from './types/gameContext.js';
+import { GameContext, PlayerContext } from './types/gameContext.js';
 
 // footer reference: <a target="_blank" href="https://icons8.com/icon/8gTxcIoC22Bp/pokemonball">Pokemonball</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
 // <a target="_blank" href="https://icons8.com/icon/45657/up-arrow">Up Arrow</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
@@ -128,19 +128,8 @@ app.get('/api/deck', async (req, res) => {
 });
 
 app.get('/api/battle', async (req, res) => {
-  // TEMPORARY - for testing the battle arena layout
   try {
     const cards = await getCards();
-
-    // const [shuffleCount, shuffled] = await shuffle(cards, true);
-
-    /*const payload = {
-      opponentBench: shuffled.slice(0, 5),
-      opponentActive: shuffled.slice(5, 6),
-      selfActive: shuffled.slice(6, 7),
-      selfBench: shuffled.slice(7, 12),
-      selfDeck: shuffled.slice(12, 65),
-    };*/
 
     return res.status(200).json({
       payload: cards.slice(0, 60),
@@ -151,6 +140,13 @@ app.get('/api/battle', async (req, res) => {
     });
   }
 });
+
+app.get('/api/Cardback/*extra', async (req, res) => {
+  // this is because the card system wants to put the /high.webp end on it, so lets fool it
+  // will force the browser to render the back of the card via the express.static middleware below
+  return res.redirect('/Cardback.jpg');
+});
+
 // serve static files in dist dir such as favicon.svg, assets/index.js, assets/index.css
 app.use(express.static(path.join(__dirname, '..', 'dist')));
 
@@ -167,7 +163,12 @@ const getRoomMembers = async function returnAllSocketsInTheGivenRoom(roomName) {
   //})
 
   return sockets;
-}
+};
+
+const getRoom = function getCurrentRoomOfSocket(socket) {
+  // socket.rooms is a set and contains the socket.id and the room id
+  return [...socket.rooms].find((room) => room !== socket.id);
+};
 
 io.on('connection', (socket) => {
   console.log(`${socket.id}`);
@@ -175,7 +176,7 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log(`${socket.id} disconnect`);
     socket.rooms.forEach((roomName) => socket.leave(roomName));
-  })
+  });
   socket.on(socketEvents.helloWorld, (msg) => {
     console.log('hello world received');
     console.log(msg);
@@ -191,15 +192,8 @@ io.on('connection', (socket) => {
       opponent.leave(WAITINGROOM);
 
       const battleId = randomUUID();
-      const battleDetails = {
-        startTime: new Date(),
-        member1: socket,
-        member2: opponent,
-        turn: 0,
-        gameContext: new GameContext(),
-      };
-      
-      ACTIVEBATTLES.set(battleId, battleDetails);
+      const gameContext = new GameContext(0, 'active', socket.id, opponent.id);
+      ACTIVEBATTLES.set(battleId, gameContext);
 
       socket.join(battleId);
       opponent.join(battleId);
@@ -209,14 +203,26 @@ io.on('connection', (socket) => {
     } else {
       socket.join(WAITINGROOM);
     }
-  })
+  });
   socket.on(socketEvents.matchMakeCancel, (ms) => {
     socket.leave(WAITINGROOM);
     const members = getRoomMembers();
-  })
+  });
   socket.on(socketEvents.battleUpdate, (playerContext) => {
-    
-  })
+    const battleId = getRoom(socket);
+    if (!battleId) return;
+
+    const gameContext = ACTIVEBATTLES.get(battleId);
+    if (!gameContext) return;
+
+    const playerContextObj = PlayerContext.copy(playerContext); // so methods are available
+    gameContext.setPlayerContext(socket.id, playerContextObj);
+    ACTIVEBATTLES.set(battleId, gameContext); // store actual state
+
+    const payload =
+      gameContext.turn < 2 ? playerContextObj.obfuscate() : playerContextObj;
+    socket.to(battleId).emit(socketEvents.contextUpdate, payload); // broadcast to room except for self
+  });
 });
 
 server.listen(port, () => {
