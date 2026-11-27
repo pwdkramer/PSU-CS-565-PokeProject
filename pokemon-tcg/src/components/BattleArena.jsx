@@ -9,6 +9,7 @@ import CARD_ANIMATIONS from '../animations/cardAnimations.js';
 import socket from '../websocket/socket.js';
 import socketEvents from '../websocket/socketEvents.js';
 import { PlayerContext } from '../types/gameContext.js';
+import Player from '../types/player.js';
 
 export default function BattleArena() {
   const { data, error } = useLoaderData();
@@ -17,7 +18,6 @@ export default function BattleArena() {
   const deck = data;
 
   const cardRefs = useRef(new Map());
-  const playerContext = useRef(new PlayerContext());
 
   const [turnBtnText, setTurnBtnText] = useState('End Turn');
   const [matchMakingStatus, setMatchMakingStatus] = useState('searching');
@@ -33,9 +33,14 @@ export default function BattleArena() {
   const [selfBench, setSelfBench] = useState(getPlaceholder(5, 'selfBench'));
   const [selfHand, setSelfHand] = useState(deck.slice(0, 7));
   const [selfDeck, setSelfDeck] = useState(deck.slice(7));
+  const [selfDiscard, setSelfDiscard] = useState([]);
   const [history, setHistory] = useState([]);
   const [battleActions, setBattleActions] = useState([]);
   const [battleAbility, setBattleAbility] = useState({});
+
+  const player = useRef(
+    new Player(selfActive[0], selfBench, selfHand, selfDeck, selfDiscard),
+  );
 
   useEffect(() => {
     socket.emit(socketEvents.matchMakeRequest);
@@ -82,8 +87,14 @@ export default function BattleArena() {
     });
   }, []);
 
-  const updatePlayerContext = () => {
-    playerContext.current = new PlayerContext(selfActive[0], selfBench);
+  const updatePlayer = () => {
+    player.current = new Player(
+      selfActive[0],
+      selfBench,
+      selfHand,
+      selfDeck,
+      selfDiscard,
+    );
   };
   const registerCardRef = useCallback((id, node) => {
     if (node) {
@@ -101,6 +112,10 @@ export default function BattleArena() {
     setBattleActions(card.attacks);
     setSelected(card);
   }, []);
+  const onAbilityClickHandler = useCallback(
+    async (ability) => {},
+    [selected, isAnimating],
+  );
   const onAttackClickHandler = useCallback(
     async (attack) => {
       if (isAnimating || !selected) {
@@ -189,8 +204,14 @@ export default function BattleArena() {
       setSelfBench(nextBench);
       setSelected(null);
 
-      playerContext.current = new PlayerContext(nextActive[0], nextBench);
-      socket.emit(socketEvents.battleUpdate, playerContext.current);
+      player.current = new Player(
+        nextActive[0],
+        nextBench,
+        nextHand,
+        selfDeck,
+        selfDiscard,
+      );
+      socket.emit(socketEvents.battleUpdate, player.current);
     },
     [selfHand, selfBench, selfActive, selected],
   );
@@ -199,8 +220,8 @@ export default function BattleArena() {
       if (prev === 'End Turn') return 'Awaiting Opponent';
       return 'End Turn';
     });
-    updatePlayerContext();
-    socket.emit(socketEvents.turnEnd, playerContext.current);
+    updatePlayer();
+    socket.emit(socketEvents.turnEnd, player.current);
   };
   const cancelSearchHandler = () => {
     socket.emit(socketEvents.matchMakeCancel);
@@ -266,6 +287,7 @@ export default function BattleArena() {
           attacks={battleActions}
           selectedCard={selected}
           onClick={onAttackClickHandler}
+          onAbility={onAbilityClickHandler}
         />
 
         <CardContainer

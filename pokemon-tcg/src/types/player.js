@@ -9,28 +9,30 @@ export default class Player {
   deck = []; // cards in deck (to be drawn)
   discard = []; // cards in discard pile
 
-  constructor({
-    active = null,
-    bench = [],
-    hand = [],
-    deck = [],
-    discard = [],
-  }) {
-    this.active = active;
-    this.bench = bench;
-    this.hand = hand;
-    this.deck = deck;
-    this.discard = discard;
+  constructor(active = null, bench = [], hand = [], deck = [], discard = []) {
+    this.active = structuredClone(active ?? null);
+    this.bench = structuredClone(bench ?? []);
+    this.hand = structuredClone(hand ?? []);
+    this.deck = structuredClone(deck ?? []);
+    this.discard = structuredClone(discard ?? []);
   }
 
   static copy(other) {
     return new Player(
-      structuredClone(other.attacker),
+      structuredClone(other.active),
       structuredClone(other.bench),
       structuredClone(other.hand),
       structuredClone(other.deck),
       structuredClone(other.discard),
     );
+  }
+
+  get attacker() {
+    return this.active;
+  }
+
+  getPlayerContext() {
+    return new PlayerContext(this.active, this.bench);
   }
 
   obfuscate() {
@@ -72,7 +74,7 @@ export default class Player {
       case cardGroups.benchPlusActive:
         return [this.active, ...this.bench];
       case cardGroups.active:
-        reutrn[this.active];
+        return [this.active];
       default:
         throw new Error(
           `valid type for Player.getCardCount = ${cardGroups.bench} | ${cardGroups.hand} | ${cardGroups.deck} | ${cardGroups.discard}; received: ${type}`,

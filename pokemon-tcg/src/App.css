@@ -444,6 +444,10 @@
   top: -15px;
 }
 
+.attackNameBadge.attackAbilityBadge {
+  background-color: var(--bg);
+}
+
 .attackInfo {
   background-color: var(--social-bg);
   border: 1px solid var(--accent);
@@ -490,6 +494,24 @@
 .cardWrapper.cardSlot {
   background-color: var(--social-bg);
   border: 1px solid var(--accent-border);
+}
+
+/* override battleActionsPanelEntry for the hpPanel */
+.battleActionsPanelEntry:has(> .hpPanel) {
+  margin-top: 2px;
+}
+
+.hpPanel {
+  background-color: var(--code-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  height: auto;
+  width: 100%;
+  padding: 4px;
+  overflow-wrap: anywhere;
+  box-sizing: border-box;
+  font-weight: bold;
 }
 
 .cardWrapper.cardSlot:hover {

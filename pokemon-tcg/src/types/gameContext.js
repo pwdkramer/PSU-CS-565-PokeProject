@@ -5,8 +5,8 @@ export class PlayerContext {
   bench = [];
 
   constructor(attacker, bench) {
-    this.attacker = attacker ?? null;
-    this.bench = bench ?? [];
+    this.attacker = structuredClone(attacker) ?? null;
+    this.bench = structuredClone(bench) ?? [];
   }
 
   static copy(other) {
@@ -79,7 +79,7 @@ export class GameContext {
     this.currentTurnMember = null;
   }
 
-  setPlayerContext(memberName, playerContext) {
+  setPlayerData(memberName, playerContext) {
     if (memberName === this.member1Name) {
       this.member1Data = playerContext;
     } else if (memberName === this.member2Name) {

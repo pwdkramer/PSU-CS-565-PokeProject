@@ -54,11 +54,29 @@ class BaseCard {
   rarity = '';
 
   constructor(rawData) {
-    ({ category: this.category, id: this.id, image: this.image, localId: this.localId, rarity: this.rarity } = rawData);
+    ({
+      category: this.category,
+      id: this.id,
+      image: this.image,
+      localId: this.localId,
+      rarity: this.rarity,
+    } = rawData);
+  }
+
+  isPokemonCard() {
+    return this.category === 'Pokemon';
+  }
+
+  isTrainerCard() {
+    return this.category === 'Trainer';
+  }
+
+  isEnergyCard() {
+    return this.category === 'Energy';
   }
 }
 
-export class RawPokemonCard extends BaseCard{
+export class RawPokemonCard extends BaseCard {
   // evolve from info
   evolveFrom = '';
   evolveFromId = '';
@@ -79,8 +97,19 @@ export class RawPokemonCard extends BaseCard{
     // only keep info we need
     super(rawData);
 
-    ({ evolveFrom: this.evolveFrom, evolveFromId: this.evolveFromId, stage: this.stage } = rawData);
-    ({ name: this.name, hp: this.hp, types: this.types, abilities: this.abilities, attacks:this.attacks , weaknesses:this.weaknesses } = rawData);
+    ({
+      evolveFrom: this.evolveFrom,
+      evolveFromId: this.evolveFromId,
+      stage: this.stage,
+    } = rawData);
+    ({
+      name: this.name,
+      hp: this.hp,
+      types: this.types,
+      abilities: this.abilities,
+      attacks: this.attacks,
+      weaknesses: this.weaknesses,
+    } = rawData);
 
     this.attachedEnergy = []; // energy cards
     this.statuses = [];
@@ -151,7 +180,7 @@ export class RawPokemonCard extends BaseCard{
   }
 }
 
-export class RawTrainerCard extends BaseCard{
+export class RawTrainerCard extends BaseCard {
   name = '';
   effect = '';
   canPlay = null;

@@ -8,6 +8,7 @@ import { randomUUID } from 'crypto';
 import database, { User, Decks } from './database/poke-tcg-db.js';
 import shuffle from './helpers/shuffle.js';
 import { GameContext, PlayerContext } from './types/gameContext.js';
+import Player from './types/player.js';
 import { randGenInt } from './helpers/randGen.js';
 
 // footer reference: <a target="_blank" href="https://icons8.com/icon/8gTxcIoC22Bp/pokemonball">Pokemonball</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
@@ -215,20 +216,21 @@ io.on('connection', (socket) => {
     socket.leave(WAITINGROOM);
     const members = await getRoomMembers();
   });
-  socket.on(socketEvents.battleUpdate, (playerContext) => {
+  socket.on(socketEvents.battleUpdate, (playerJson) => {
     const [battleId, gameContext] = getBattle(socket);
     if (!battleId) return;
     if (!gameContext) return;
 
-    const playerContextObj = PlayerContext.copy(playerContext); // so methods are available
-    gameContext.setPlayerContext(socket.id, playerContextObj);
+    const player = Player.copy(playerJson); // so methods are available
+    const playerContext = player.getPlayerContext();
+    gameContext.setPlayerData(socket.id, player);
     ACTIVEBATTLES.set(battleId, gameContext); // store actual state
 
     const payload =
-      gameContext.turn < 2 ? playerContextObj.obfuscate() : playerContextObj;
+      gameContext.turn < 2 ? playerContext.obfuscate() : playerContext;
     socket.to(battleId).emit(socketEvents.contextUpdate, payload); // broadcast to room except for self
   });
-  socket.on(socketEvents.turnEnd, async (playerContext) => {
+  socket.on(socketEvents.turnEnd, async (player) => {
     const [battleId, gameContext] = getBattle(socket);
     if (!battleId) return;
     if (!gameContext) return;
@@ -243,11 +245,11 @@ io.on('connection', (socket) => {
       // update cards of other player with non-obfuscated versions
       io.to(gameContext.member1Name).emit(
         socketEvents.battleStart,
-        gameContext.member2Data,
+        gameContext.member2Data.getPlayerContext(),
       );
       io.to(gameContext.member2Name).emit(
         socketEvents.battleStart,
-        gameContext.member1Data,
+        gameContext.member1Data.getPlayerContext(),
       );
     }
 

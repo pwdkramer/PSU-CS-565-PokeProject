@@ -66,8 +66,8 @@ const CARD_ANIMATIONS = Object.freeze({
   },
   CardFlipP2: {
     action: [
-      { transform: 'perspective(800px) rotateY(90)' },
-      { transform: 'perspective(800px) rotateY(0deg)' },
+      { transform: 'perspective(800px) rotateY(90deg)' },
+      { transform: 'perspective(800px) rotateY(0)' },
     ],
 
     timing: {
