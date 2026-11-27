@@ -19,6 +19,7 @@ export default function BattleArena() {
   const cardRefs = useRef(new Map());
   const playerContext = useRef(new PlayerContext());
 
+  const [turnBtnText, setTurnBtnText] = useState('End Turn');
   const [matchMakingStatus, setMatchMakingStatus] = useState('searching');
   const [isAnimating, setIsAnimating] = useState(false);
   const [selected, setSelected] = useState(null);
@@ -38,13 +39,52 @@ export default function BattleArena() {
 
   useEffect(() => {
     socket.emit(socketEvents.matchMakeRequest);
-    socket.on(socketEvents.battleStart, () => setMatchMakingStatus('battle'));
+    socket.on(socketEvents.matchStart, () => setMatchMakingStatus('battle'));
+    socket.on(socketEvents.battleStart, async (opponentContext) => {
+      const flippingCards = [cardRefs.current.get(opponentContext.attacker.id)];
+      opponentContext.bench.forEach((card) => {
+        if (card.id.startsWith('base')) {
+          flippingCards.push(cardRefs.current.get(card.id));
+        }
+      });
+      console.log(flippingCards);
+
+      let animation = CARD_ANIMATIONS.CardFlipP1;
+
+      const animPart1 = flippingCards.map((card) => {
+        return card.animate(animation.action, animation.timing);
+      });
+
+      await Promise.all(animPart1.map((anim) => anim.finished));
+
+      setOpponentActive([opponentContext.attacker]);
+      setOpponentBench(opponentContext.bench);
+
+      animation = CARD_ANIMATIONS.CardFlipP2;
+
+      const animPart2 = flippingCards.map((card) => {
+        return card.animate(animation.action, animation.timing);
+      });
+
+      await Promise.all(animPart2.map((anim) => anim.finished));
+
+      animPart1.forEach((anim) => anim.cancel());
+      animPart2.forEach((anim) => anim.cancel());
+    });
     socket.on(socketEvents.contextUpdate, (opponentContext) => {
       setOpponentActive([opponentContext.attacker]);
       setOpponentBench(opponentContext.bench);
     });
+    socket.on(socketEvents.yourTurn, (isMyTurn) => {
+      isMyTurn
+        ? setTurnBtnText('End Turn')
+        : setTurnBtnText('Awaiting Opponent');
+    });
   }, []);
 
+  const updatePlayerContext = () => {
+    playerContext.current = new PlayerContext(selfActive[0], selfBench);
+  };
   const registerCardRef = useCallback((id, node) => {
     if (node) {
       cardRefs.current.set(id, node);
@@ -83,11 +123,12 @@ export default function BattleArena() {
       await animation.finished;
 
       if (selected) {
+        const damageMetric = attack.damage ? attack.damage : 'No';
         setHistory((prev) => {
           return [
             ...prev,
             {
-              text: `${selected.name}: Attack using ${attack.name} for ${attack.damage} damage`,
+              text: `${selected.name}: Attack using ${attack.name} for ${damageMetric} damage`,
               timestamp: Date.now(),
               historyType: 'self',
             },
@@ -148,13 +189,18 @@ export default function BattleArena() {
       setSelfBench(nextBench);
       setSelected(null);
 
-      playerContext.current = new PlayerContext(nextActive[0], null, nextBench);
+      playerContext.current = new PlayerContext(nextActive[0], nextBench);
       socket.emit(socketEvents.battleUpdate, playerContext.current);
     },
     [selfHand, selfBench, selfActive, selected],
   );
   const endTurnClickHandler = () => {
-    console.log('turn end clicked');
+    setTurnBtnText((prev) => {
+      if (prev === 'End Turn') return 'Awaiting Opponent';
+      return 'End Turn';
+    });
+    updatePlayerContext();
+    socket.emit(socketEvents.turnEnd, playerContext.current);
   };
   const cancelSearchHandler = () => {
     socket.emit(socketEvents.matchMakeCancel);
@@ -174,12 +220,15 @@ export default function BattleArena() {
     return <MatchMaking onClickHandler={cancelSearchHandler} />;
   }
 
+  const isBoardInteractive = turnBtnText === 'End Turn' ? true : false; // this doesn't need to be state
+
   if (matchMakingStatus === 'battle') {
     return (
       <div className="battleArena">
         <CardContainer
           cards={opponentBench}
           selectedCardId={selected?.id}
+          registerCardRef={registerCardRef}
           id="opponentBench"
         />
 
@@ -196,17 +245,18 @@ export default function BattleArena() {
           <button
             type="button"
             id="endTurnButton"
-            onClick={endTurnClickHandler}
+            onClick={isBoardInteractive ? endTurnClickHandler : null}
+            disabled={!isBoardInteractive}
           >
-            End Turn
+            {turnBtnText}
           </button>
           <CardContainer
             cards={selfActive}
             selectedCardId={selected?.id}
             registerCardRef={registerCardRef}
             id="selfActive"
-            draggable={true}
-            canDrop={true}
+            draggable={isBoardInteractive}
+            canDrop={isBoardInteractive}
             onCardClick={onActiveClickHandler}
             onCardDrop={onCardDrop}
           />
@@ -223,8 +273,8 @@ export default function BattleArena() {
           id="selfBench"
           selectedCardId={selected?.id}
           registerCardRef={registerCardRef}
-          draggable={true}
-          canDrop={true}
+          draggable={isBoardInteractive}
+          canDrop={isBoardInteractive}
           onCardClick={onBenchClickHandler}
           onCardDrop={onCardDrop}
         />
@@ -233,7 +283,7 @@ export default function BattleArena() {
           selectedCardId={selected?.id}
           id="selfHand"
           visibleCount={8}
-          draggable={true}
+          draggable={isBoardInteractive}
         />
       </div>
     );

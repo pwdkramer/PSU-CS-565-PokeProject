@@ -7,8 +7,8 @@ import socketEvents from './websocket/socketEvents.js';
 import { randomUUID } from 'crypto';
 import database, { User, Decks } from './database/poke-tcg-db.js';
 import shuffle from './helpers/shuffle.js';
-import { disconnect } from 'cluster';
 import { GameContext, PlayerContext } from './types/gameContext.js';
+import { randGenInt } from './helpers/randGen.js';
 
 // footer reference: <a target="_blank" href="https://icons8.com/icon/8gTxcIoC22Bp/pokemonball">Pokemonball</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
 // <a target="_blank" href="https://icons8.com/icon/45657/up-arrow">Up Arrow</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
@@ -170,6 +170,13 @@ const getRoom = function getCurrentRoomOfSocket(socket) {
   return [...socket.rooms].find((room) => room !== socket.id);
 };
 
+const getBattle = function getBattleIdAndGameContext(socket) {
+  const battleId = getRoom(socket);
+  const gameContext = ACTIVEBATTLES.get(battleId);
+
+  return [battleId, gameContext];
+};
+
 io.on('connection', (socket) => {
   console.log(`${socket.id}`);
 
@@ -183,7 +190,7 @@ io.on('connection', (socket) => {
   });
   socket.on(socketEvents.matchMakeRequest, async () => {
     const members = await getRoomMembers(WAITINGROOM);
-    console.log(members.length);
+
     if (members.length > 0) {
       const [_shuffleCount, shuffled] = await shuffle(members);
       const opponent = shuffled[0];
@@ -199,20 +206,18 @@ io.on('connection', (socket) => {
       opponent.join(battleId);
 
       // broadcast to room
-      io.to(battleId).emit(socketEvents.battleStart);
+      io.to(battleId).emit(socketEvents.matchStart);
     } else {
       socket.join(WAITINGROOM);
     }
   });
-  socket.on(socketEvents.matchMakeCancel, (ms) => {
+  socket.on(socketEvents.matchMakeCancel, async (ms) => {
     socket.leave(WAITINGROOM);
-    const members = getRoomMembers();
+    const members = await getRoomMembers();
   });
   socket.on(socketEvents.battleUpdate, (playerContext) => {
-    const battleId = getRoom(socket);
+    const [battleId, gameContext] = getBattle(socket);
     if (!battleId) return;
-
-    const gameContext = ACTIVEBATTLES.get(battleId);
     if (!gameContext) return;
 
     const playerContextObj = PlayerContext.copy(playerContext); // so methods are available
@@ -222,6 +227,36 @@ io.on('connection', (socket) => {
     const payload =
       gameContext.turn < 2 ? playerContextObj.obfuscate() : playerContextObj;
     socket.to(battleId).emit(socketEvents.contextUpdate, payload); // broadcast to room except for self
+  });
+  socket.on(socketEvents.turnEnd, async (playerContext) => {
+    const [battleId, gameContext] = getBattle(socket);
+    if (!battleId) return;
+    if (!gameContext) return;
+
+    const newTurn = gameContext.incrementTurn();
+
+    if (newTurn === 2) {
+      // then prelim is over, time to start battle
+      gameContext.randomizeTurn();
+
+      // signal that the prelim stage is over and to
+      // update cards of other player with non-obfuscated versions
+      io.to(gameContext.member1Name).emit(
+        socketEvents.battleStart,
+        gameContext.member2Data,
+      );
+      io.to(gameContext.member2Name).emit(
+        socketEvents.battleStart,
+        gameContext.member1Data,
+      );
+    }
+
+    ACTIVEBATTLES.set(battleId, gameContext); // store state
+
+    if (newTurn >= 2) {
+      io.to(gameContext.currentPlayer).emit(socketEvents.yourTurn, true);
+      io.to(gameContext.nextPlayer).emit(socketEvents.yourTurn, false);
+    }
   });
 });
 

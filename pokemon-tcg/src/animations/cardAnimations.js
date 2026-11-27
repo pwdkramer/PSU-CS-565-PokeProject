@@ -51,6 +51,32 @@ const CARD_ANIMATIONS = Object.freeze({
       iterations: 1,
     },
   },
+  CardFlipP1: {
+    action: [
+      { transform: 'perspective(800px) rotateY(0)' },
+      { transform: 'perspective(800px) rotateY(90deg)' },
+    ],
+
+    timing: {
+      duration: 300,
+      iterations: 1,
+      easing: 'ease-in',
+      fill: 'forwards', // locks the animation at the last transform position
+    },
+  },
+  CardFlipP2: {
+    action: [
+      { transform: 'perspective(800px) rotateY(90)' },
+      { transform: 'perspective(800px) rotateY(0deg)' },
+    ],
+
+    timing: {
+      duration: 300,
+      iterations: 1,
+      easing: 'ease-out',
+      fill: 'forwards', // locks the animation at the last transform position
+    },
+  },
 });
 
 export default CARD_ANIMATIONS;

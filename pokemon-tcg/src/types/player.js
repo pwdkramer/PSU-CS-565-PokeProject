@@ -1,5 +1,6 @@
 import { cardGroups, filterTypes } from './actions.js';
-import { RawPokemonCard, RawTrainerCard, RawEnergyCard } from './rawCard.js';
+import { RawPokemonCard, RawTrainerCard, RawEnergyCard } from './RawCard.js';
+import { PlayerContext } from './gameContext.js';
 
 export default class Player {
   active = null; // active pokemon card
@@ -20,6 +21,36 @@ export default class Player {
     this.hand = hand;
     this.deck = deck;
     this.discard = discard;
+  }
+
+  static copy(other) {
+    return new Player(
+      structuredClone(other.attacker),
+      structuredClone(other.bench),
+      structuredClone(other.hand),
+      structuredClone(other.deck),
+      structuredClone(other.discard),
+    );
+  }
+
+  obfuscate() {
+    const ret = Player.copy(this);
+
+    if (ret.attacker.image) {
+      // then this is not an empty slot
+      ret.attacker.image = '/api/Cardback';
+    }
+
+    ret.bench = ret.bench.map((card) => {
+      if (card.image) {
+        card.image = '/api/Cardback';
+        return card;
+      }
+
+      return card;
+    });
+
+    return ret;
   }
 
   getActiveCard() {

@@ -1,16 +1,19 @@
+import { randGenInt } from '../helpers/randGen.js';
+
 export class PlayerContext {
   attacker = null;
-  hp = 100;
   bench = [];
 
-  constructor(attacker, hp, bench) {
+  constructor(attacker, bench) {
     this.attacker = attacker ?? null;
-    this.hp = hp ?? 100;
     this.bench = bench ?? [];
   }
 
   static copy(other) {
-    return new PlayerContext(other.attacker, other.hp, other.bench);
+    return new PlayerContext(
+      structuredClone(other.attacker),
+      structuredClone(other.bench),
+    );
   }
 
   obfuscate() {
@@ -44,6 +47,7 @@ export class GameContext {
 
   member1Name = '';
   member2Name = '';
+  currentTurnMember = null; // which member name's turn it currently is
 
   member1Data = new PlayerContext();
   member2Data = new PlayerContext();
@@ -71,6 +75,8 @@ export class GameContext {
     this.member2Data = member2Data ?? new PlayerContext();
 
     this.areCardsVisible = turn > 1; // cards hidden until turn 2, each half turn is a single turn
+
+    this.currentTurnMember = null;
   }
 
   setPlayerContext(memberName, playerContext) {
@@ -79,5 +85,37 @@ export class GameContext {
     } else if (memberName === this.member2Name) {
       this.member2Data = playerContext;
     }
+  }
+
+  incrementTurn() {
+    this.turn += 1;
+
+    if (this.currentTurnMember) {
+      this.currentTurnMember =
+        this.currentTurnMember === this.member1Name
+          ? this.member1Name
+          : this.member2Name;
+    }
+
+    return this.turn;
+  }
+
+  randomizeTurn() {
+    const coinFlip = randGenInt(0, 1);
+    if (coinFlip === 0) {
+      this.currentTurnMember = this.member1Name;
+    } else {
+      this.currentTurnMember = this.member2Name;
+    }
+  }
+
+  get currentPlayer() {
+    return this.currentTurnMember;
+  }
+
+  get nextPlayer() {
+    return this.currentTurnMember === this.member1Name
+      ? this.member2Name
+      : this.member1Name;
   }
 }
